@@ -3,8 +3,8 @@
     "version": "2.2.11",
     "width": 2000,
     "height": 2000,
-    "scrollTop": 0,
-    "scrollLeft": 0,
+    "scrollTop": -1132,
+    "scrollLeft": -627,
     "zoomLevel": 1,
     "show": {
       "tableComment": true,
@@ -18,7 +18,7 @@
       "relationship": true
     },
     "database": "MySQL",
-    "databaseName": "",
+    "databaseName": "YOUDY",
     "canvasType": "ERD",
     "language": "GraphQL",
     "tableCase": "pascalCase",
@@ -41,11 +41,600 @@
     "pluginSerializationMap": {}
   },
   "table": {
-    "tables": [],
-    "indexes": []
+    "tables": [
+      {
+        "name": "YD_USER",
+        "comment": "사용자",
+        "columns": [
+          {
+            "name": "USER_NO",
+            "comment": "",
+            "dataType": "VARCHAR(20)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 79.25888061523438,
+              "widthDefault": 60
+            },
+            "id": "c2fcb96a-4899-40c0-afbb-fa48d8dadaed"
+          },
+          {
+            "name": "",
+            "comment": "",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "c8e333ca-3501-4918-8149-2d5965e7f970"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 865,
+          "top": 1313,
+          "zIndex": 131,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "6c3ba431-8abb-4452-9861-6e333787706f"
+      },
+      {
+        "name": "",
+        "comment": "인증번호",
+        "columns": [],
+        "ui": {
+          "active": false,
+          "left": 891,
+          "top": 1472,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "d0efe2b6-b5ef-449c-8f3c-4fabff541c21"
+      },
+      {
+        "name": "",
+        "comment": "파일",
+        "columns": [],
+        "ui": {
+          "active": false,
+          "left": 895,
+          "top": 1594,
+          "zIndex": 134,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "e42c3cde-a623-46ec-bcf8-819e2992aa8d"
+      },
+      {
+        "name": "",
+        "comment": "로그인 이력",
+        "columns": [],
+        "ui": {
+          "active": false,
+          "left": 894,
+          "top": 1702,
+          "zIndex": 4,
+          "widthName": 60,
+          "widthComment": 61.64396667480469
+        },
+        "visible": true,
+        "id": "a1da256f-cb81-4453-befd-7e5847c56faa"
+      },
+      {
+        "name": "",
+        "comment": "학습 이력",
+        "columns": [
+          {
+            "name": "",
+            "comment": "사용자",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "5b933348-b699-4b7d-8303-36f1854c5710"
+          },
+          {
+            "name": "",
+            "comment": "총 학습 시간",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 65.06295776367188,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "46cbf547-7c1a-4ab4-9e7e-270433755fc6"
+          },
+          {
+            "name": "",
+            "comment": "날짜",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "3ae9f6b7-0704-4ca2-a933-122c44965d47"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 1301,
+          "top": 1313,
+          "zIndex": 14,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "3c0bfe57-5587-4b78-92cf-ad68e481332a"
+      },
+      {
+        "name": "",
+        "comment": "timetable",
+        "columns": [
+          {
+            "name": "",
+            "comment": "사용자",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "8e379afe-8a40-456e-9bb7-183917f0b407"
+          },
+          {
+            "name": "",
+            "comment": "시작시간",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "307ea702-995f-4139-824d-7994998c432c"
+          },
+          {
+            "name": "",
+            "comment": "종료시간",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "af7c3197-f3cd-44c2-831c-ca40cbe95a21"
+          },
+          {
+            "name": "",
+            "comment": "모드",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "883a9793-fac3-460e-8595-d03c468f00de"
+          },
+          {
+            "name": "",
+            "comment": "날짜",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "3a81e5b8-7517-4928-a549-ff7437d002c3"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 1308,
+          "top": 1516,
+          "zIndex": 44,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "96f0ef3f-558c-45f4-b11e-09024c11cb14"
+      },
+      {
+        "name": "",
+        "comment": "시청 기록",
+        "columns": [
+          {
+            "name": "",
+            "comment": "사용자",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "cbc41935-fe18-4042-aa1f-54987f4f9c47"
+          },
+          {
+            "name": "",
+            "comment": "유튜브 ID",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "8ac7852a-718f-4b2d-a971-6317391fc08c"
+          },
+          {
+            "name": "",
+            "comment": "날짜",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "da770012-e74c-4242-b055-8c9ceee968b6"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 1313.1105,
+          "top": 1700.6665,
+          "zIndex": 88,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "d145ed54-d101-4fd0-b0e9-5d5d4a489bb9"
+      },
+      {
+        "name": "",
+        "comment": "재생목록",
+        "columns": [
+          {
+            "name": "",
+            "comment": "파일 순번",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "016e051f-56c8-441e-ac3c-b0c9ec27954c"
+          },
+          {
+            "name": "",
+            "comment": "유튜브 ID",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "b7c390b7-e01a-42a3-8c51-6f4e6bd56be1"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 870.6662,
+          "top": 1815.5551,
+          "zIndex": 133,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "df9cdb8f-6103-4e95-862f-c9b3c98c34f8"
+      },
+      {
+        "name": "",
+        "comment": "재생목록 파일",
+        "columns": [
+          {
+            "name": "",
+            "comment": "파일 순번",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "bbdfe66d-dfee-4c73-ab85-723b2317e080"
+          },
+          {
+            "name": "",
+            "comment": "파일 명",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "b5c95e94-277c-4be3-9ee7-0f6da3fba391"
+          },
+          {
+            "name": "",
+            "comment": "사용자",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "8fd57114-987e-41ae-b221-3dc77f964300"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 1268,
+          "top": 1844,
+          "zIndex": 132,
+          "widthName": 60,
+          "widthComment": 72.88896179199219
+        },
+        "visible": true,
+        "id": "b032fdf1-9af5-42e9-9d2f-4630951d9a4f"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "USER_NO",
+        "columns": [],
+        "unique": true,
+        "id": "b73bc72d-3413-4ca5-b36e-210f42915870",
+        "tableId": "6c3ba431-8abb-4452-9861-6e333787706f"
+      }
+    ]
   },
   "memo": {
-    "memos": []
+    "memos": [
+      {
+        "value": "과거 날짜 있으면 delete 후 insert\n\n오늘 날짜 있으면 계속 insert (축적)",
+        "ui": {
+          "active": false,
+          "left": 1664,
+          "top": 1495,
+          "zIndex": 36,
+          "width": 127,
+          "height": 100
+        },
+        "id": "e44943b8-837d-494e-a109-766f79f4ae52"
+      },
+      {
+        "value": "종료 누를때 마다 update",
+        "ui": {
+          "active": false,
+          "left": 1643,
+          "top": 1310,
+          "zIndex": 39,
+          "width": 127,
+          "height": 100
+        },
+        "id": "e711ed99-1c1a-41d2-9b1e-35606a6163e6"
+      }
+    ]
   },
   "relationship": {
     "relationships": []
