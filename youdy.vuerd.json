@@ -3,9 +3,9 @@
     "version": "2.2.11",
     "width": 2000,
     "height": 2000,
-    "scrollTop": -943,
-    "scrollLeft": -487,
-    "zoomLevel": 0.9,
+    "scrollTop": -1056,
+    "scrollLeft": -280,
+    "zoomLevel": 1,
     "show": {
       "tableComment": true,
       "columnComment": true,
@@ -48,7 +48,7 @@
         "columns": [
           {
             "name": "USER_NO",
-            "comment": "사용자 순번",
+            "comment": "사용자 번호",
             "dataType": "VARCHAR(20)",
             "default": "",
             "option": {
@@ -93,29 +93,6 @@
             "id": "68d252cd-d53c-4765-a395-90a5ce0a88dc"
           },
           {
-            "name": "NAME",
-            "comment": "사용자 이름",
-            "dataType": "VARCHAR",
-            "default": "",
-            "option": {
-              "autoIncrement": false,
-              "primaryKey": false,
-              "unique": false,
-              "notNull": false
-            },
-            "ui": {
-              "active": false,
-              "pk": false,
-              "fk": false,
-              "pfk": false,
-              "widthName": 60,
-              "widthComment": 61.64396667480469,
-              "widthDataType": 60,
-              "widthDefault": 60
-            },
-            "id": "0be68083-a2ba-40f5-b767-81bc94f45dce"
-          },
-          {
             "name": "PASSWORD",
             "comment": "사용자 비밀번호",
             "dataType": "VARCHAR",
@@ -139,8 +116,8 @@
             "id": "876deb8e-0c3b-4b1f-9728-79cd3649efa6"
           },
           {
-            "name": "NICK_NAME",
-            "comment": "사용자 닉네임",
+            "name": "NAME",
+            "comment": "사용자 이름",
             "dataType": "VARCHAR",
             "default": "",
             "option": {
@@ -154,8 +131,8 @@
               "pk": false,
               "fk": false,
               "pfk": false,
-              "widthName": 67.41592407226562,
-              "widthComment": 72.88896179199219,
+              "widthName": 60,
+              "widthComment": 61.64396667480469,
               "widthDataType": 60,
               "widthDefault": 60
             },
@@ -254,6 +231,29 @@
             "id": "0a8a670b-1ba1-4a2c-ae2f-976314be7ef8"
           },
           {
+            "name": "PRIFILE_FILE_SN",
+            "comment": "프로필 사진 순번",
+            "dataType": "VARCHAR",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 91.59587097167969,
+              "widthComment": 87.55294799804688,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "7d833c94-c719-41c9-8f23-483788a14111"
+          },
+          {
             "name": "DELETE_YN",
             "comment": "삭제 여부",
             "dataType": "VARCHAR",
@@ -298,11 +298,27 @@
               "widthDefault": 60
             },
             "id": "863a4402-dc29-4822-b327-f8f4d6401f75"
-          },
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 341.6669,
+          "top": 713.0003,
+          "zIndex": 58,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "6c3ba431-8abb-4452-9861-6e333787706f"
+      },
+      {
+        "name": "YD_AUTH_NO",
+        "comment": "인증번호",
+        "columns": [
           {
-            "name": "PRIFILE_FILE_SN",
-            "comment": "프로필 사진 순번",
-            "dataType": "VARCHAR",
+            "name": "USER_NO",
+            "comment": "사용자 번호",
+            "dataType": "",
             "default": "",
             "option": {
               "autoIncrement": false,
@@ -315,42 +331,50 @@
               "pk": false,
               "fk": false,
               "pfk": false,
-              "widthName": 91.59587097167969,
-              "widthComment": 87.55294799804688,
+              "widthName": 60,
+              "widthComment": 61.64396667480469,
               "widthDataType": 60,
               "widthDefault": 60
             },
-            "id": "7d833c94-c719-41c9-8f23-483788a14111"
+            "id": "cfea2030-4bc4-41e8-a7fb-cde57e913655"
+          },
+          {
+            "name": "AUTH_NO",
+            "comment": "인증번호",
+            "dataType": "",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "31dfbe62-b54f-4d67-9c12-3d6798d3c1bd"
           }
         ],
         "ui": {
           "active": false,
-          "left": 336.1114,
-          "top": 856.3335,
-          "zIndex": 11,
-          "widthName": 60,
-          "widthComment": 60
-        },
-        "visible": true,
-        "id": "6c3ba431-8abb-4452-9861-6e333787706f"
-      },
-      {
-        "name": "",
-        "comment": "인증번호",
-        "columns": [],
-        "ui": {
-          "active": false,
-          "left": 349.8891,
-          "top": 1219.7781,
-          "zIndex": 1,
-          "widthName": 60,
+          "left": 340.3336,
+          "top": 1020.5557,
+          "zIndex": 78,
+          "widthName": 75.80094909667969,
           "widthComment": 60
         },
         "visible": true,
         "id": "d0efe2b6-b5ef-449c-8f3c-4fabff541c21"
       },
       {
-        "name": "",
+        "name": "YD_FILE",
         "comment": "파일",
         "columns": [
           {
@@ -471,9 +495,9 @@
         ],
         "ui": {
           "active": false,
-          "left": 351.0002,
-          "top": 1303.5557,
-          "zIndex": 5,
+          "left": 340.0002,
+          "top": 1154.5557,
+          "zIndex": 80,
           "widthName": 60,
           "widthComment": 60
         },
@@ -481,7 +505,7 @@
         "id": "e42c3cde-a623-46ec-bcf8-819e2992aa8d"
       },
       {
-        "name": "",
+        "name": "YD_LOGIN_HIST",
         "comment": "로그인 이력",
         "columns": [
           {
@@ -579,17 +603,17 @@
         ],
         "ui": {
           "active": false,
-          "left": 361.0004,
-          "top": 1495.1114,
-          "zIndex": 6,
-          "widthName": 60,
+          "left": 339.0004,
+          "top": 1352.1114,
+          "zIndex": 82,
+          "widthName": 87.79989624023438,
           "widthComment": 61.64396667480469
         },
         "visible": true,
         "id": "a1da256f-cb81-4453-befd-7e5847c56faa"
       },
       {
-        "name": "",
+        "name": "YD_STUDY_HIST",
         "comment": "학습 이력",
         "columns": [
           {
@@ -664,10 +688,10 @@
         ],
         "ui": {
           "active": false,
-          "left": 907.6672,
-          "top": 1077.556,
-          "zIndex": 8,
-          "widthName": 60,
+          "left": 906.6672,
+          "top": 1043.556,
+          "zIndex": 86,
+          "widthName": 89.87991333007812,
           "widthComment": 60
         },
         "visible": true,
@@ -782,7 +806,7 @@
         "id": "96f0ef3f-558c-45f4-b11e-09024c11cb14"
       },
       {
-        "name": "",
+        "name": "YD_VIEW_HIST",
         "comment": "시청 기록",
         "columns": [
           {
@@ -859,15 +883,15 @@
           "active": false,
           "left": 909.3329,
           "top": 1415.111,
-          "zIndex": 10,
-          "widthName": 60,
+          "zIndex": 90,
+          "widthName": 81.49490356445312,
           "widthComment": 60
         },
         "visible": true,
         "id": "d145ed54-d101-4fd0-b0e9-5d5d4a489bb9"
       },
       {
-        "name": "",
+        "name": "YD_PLAYLIST",
         "comment": "재생목록",
         "columns": [
           {
@@ -919,10 +943,10 @@
         ],
         "ui": {
           "active": false,
-          "left": 379.7775,
-          "top": 1663.1107,
-          "zIndex": 9,
-          "widthName": 60,
+          "left": 341.7775,
+          "top": 1540.1107,
+          "zIndex": 84,
+          "widthName": 74.44891357421875,
           "widthComment": 60
         },
         "visible": true,
