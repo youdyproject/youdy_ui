@@ -1,12 +1,8 @@
-import React from "react"
-
 export default function Footer() {
   return (
-    <footer className="bg-gray-100 text-gray-600 text-sm border-t">
-
+    <footer className="bg-gray-100 text-gray-600 text-sm border-t w-full">
       <div className="w-full px-4 py-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-   
+        <div className="flex flex-col md:flex-row justify-between gap-8">
           <div className="flex-1">
             <p className="font-semibold mb-2">고객센터 &gt;</p>
             <p className="text-xl font-bold">1600 - 0000</p>
@@ -21,12 +17,12 @@ export default function Footer() {
             <p>개인정보 처리 방침</p>
           </div>
 
-          <div className="flex-1 border-l pl-4 text-xs text-gray-500 pl-4">
+          <div className="flex-1 border-l pl-4 text-xs text-gray-500">
             <p>(주)어쩌구 | 대표이사 저쩌구 | 서울 서초구 서초대로 00길 00타워 00층</p>
             <p>email@test.com / 사업자등록번호 000-0000000</p>
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }

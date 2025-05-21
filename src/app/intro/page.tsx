@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/Button";
 
 export default function Page() {
   return (
+    <>
     <div className="relative flex flex-col items-center justify-between min-h-screen px-4 py-6">
       
       <div className="absolute top-2 left-4 text-sm font-bold">
@@ -46,5 +47,6 @@ export default function Page() {
         </div>
       </div>
     </div>
+     </>
   );
 }
