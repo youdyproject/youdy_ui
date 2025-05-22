@@ -1,6 +1,6 @@
 "use client";
 
-import Footer from "@/components/layout/footer";
+import Footer from "@/components/layout/Footer";
 import { useRef, useState } from "react";
 import Link from "next/link";
 

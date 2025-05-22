@@ -1,10 +1,24 @@
-import { Button } from "@/components/ui/Button";
+import VideoWithLectures from "@/components/layout/VideoWithLectures"
+import StudyTimeline from "@/components/layout/StudyTimeline"
+import Header from "@/components/layout/Header"
+import Footer from "@/components/layout/Footer"
 
-export default function Page() {
+export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-3xl font-bold">ShadCN/UI 적용 완료 🎉</h1>
-      <Button className="mt-4">클릭하세요</Button>
+    <div className="flex flex-col min-h-screen bg-white">
+      <Header/>
+      <div className="flex flex-col md:flex-row">
+        {/* 왼쪽 영상 영역과 오른쪽 강의 목록 */}
+        <div className="w-full md:w-[75%]">
+          <VideoWithLectures />
+        </div>
+
+        {/* 타임라인 */}
+        <div className="w-full md:w-[25%] p-4">
+          <StudyTimeline />
+        </div>
+      </div>
+    <Footer/>
     </div>
-  );
+  )
 }
