@@ -88,9 +88,9 @@ export default function Header() {
               1
             </span>
           </button>
-          <button className="rounded-full bg-gray-200 p-1">
-            <User className="h-6 w-6 text-gray-600" />
-          </button>
+          <Link href="/info" className="rounded-full bg-gray-200 p-1">
+            <User className="h-6 w-6 text-gray-600"/> 
+          </Link>
         </div>
       </div>
     </header>

@@ -82,8 +82,9 @@ export default function VideoWithLectures() {
       </div>
 
       {/* 강의 목록 */}
-      <div className="w-full md:w-[27%] p-4">
-        <div className="h-full">
+      <div className="w-full md:w-[27%] p-4 flex flex-col">
+        {/* TypeScript 강좌 */}
+        <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white p-4 mb-4">
           <h2 className="text-xl font-bold mb-4">TypeScript 강좌</h2>
 
           <div className="space-y-3">
@@ -97,17 +98,35 @@ export default function VideoWithLectures() {
               </div>
             ))}
           </div>
+        </div>
 
-          <div className="mt-8">
-            <h3 className="font-medium mb-2">메모</h3>
+        <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white p-4 mb-4">
+          <h2 className="text-xl font-bold mb-4">TypeScript 강좌</h2>
+
+          <div className="space-y-3">
             {lectures.map((lecture) => (
-              <div key={lecture.id} className="mb-2 flex">
-                <span className="text-blue-500 mr-2">{lecture.duration}</span>
-                <span className="text-gray-600">메모메모메모</span>
+              <div
+                key={lecture.id}
+                className="bg-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-300 transition-colors"
+              >
+                <h3 className="font-medium">{lecture.title}</h3>
+                <p className="text-sm text-gray-600">{lecture.description}</p>
               </div>
             ))}
           </div>
         </div>
+
+        {/* 메모 섹션 
+        <div>
+          <h3 className="font-medium mb-2">메모</h3>
+          {lectures.map((lecture) => (
+            <div key={lecture.id} className="mb-2 flex">
+              <span className="text-blue-500 mr-2">{lecture.duration}</span>
+              <span className="text-gray-600">메모메모메모</span>
+            </div>
+          ))}
+        </div>
+        */}
       </div>
     </div>
   )
