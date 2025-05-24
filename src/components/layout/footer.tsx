@@ -7,7 +7,7 @@ export default function Footer() {
             <p className="font-semibold mb-2">고객센터 &gt;</p>
             <p className="text-xl font-bold">1600 - 0000</p>
             <p className="text-xs text-gray-500">평일 : 09:00 ~ 18:00</p>
-            <p className="text-xs text-gray-500">주말, 공휴일 : 09:00 ~ 12:00</p>
+            <p className="tnpm run devext-xs text-gray-500">주말, 공휴일 : 09:00 ~ 12:00</p>
           </div>
 
           <div className="flex-1 flex flex-col gap-2">

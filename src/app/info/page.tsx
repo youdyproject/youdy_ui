@@ -41,8 +41,7 @@ export default function Page() {
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="mt-2 text-xs text-blue-500 hover:underline"
-              >
+                className="mt-2 text-xs text-blue-500 hover:underline">
                 프로필 사진 변경
               </button>
 
