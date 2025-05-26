@@ -87,7 +87,7 @@ export default function Page() {
                     >로그인</Button>
                 <div className="flex items-center gap-4">
                     <Link href="/auth/find-account" className="mt-2 text-sm">
-                        아이디/비밀번호 찾기
+                        비밀번호 찾기
                     </Link>
                     <Link href="/auth/register" className="mt-2 text-sm">
                         회원가입

@@ -1,16 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, ChangeEvent } from "react"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { Label } from "@/components/ui/label"
+import { Label } from "@/components/ui/Label"
 import { CheckCircle } from "lucide-react"
+import api from "@/utils/api";
+import Link from "next/link"
 
 export default function SignupPage() {
     const [currentStep, setCurrentStep] = useState<number>(1)
     const [email, setEmail] = useState<string>("")
     const [verificationCode, setVerificationCode] = useState<string>("")
-    const [username, setUsername] = useState<string>("")
     const [password, setPassword] = useState<string>("")
     const [confirmPassword, setConfirmPassword] = useState<string>("")
     const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false)
@@ -18,6 +19,42 @@ export default function SignupPage() {
     const [animating, setAnimating] = useState<boolean>(false)
 
     const totalSteps = 4
+
+    const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
+    const [checking, setChecking] = useState(false)
+
+    // 실시간 중복 체크 로직 (입력할 때마다 500ms 기다려서 실행)
+    useEffect(() => {
+        console.log("useeffect실행중")
+        if (!email || !email.includes('@')) return
+
+        const timer = setTimeout(() => {
+        setChecking(true)
+
+        const url = "/api/member/email/dup?email=" + email
+
+        const response = api.get(url, 
+            {
+                headers: {
+                    FrontToken : "youdyfronttoken"
+                }
+            }).then((res) => {
+                console.log("res:", res);
+                setIsAvailable(res.data.success)
+                setChecking(false)
+              })
+              .catch(() => {
+                setIsAvailable(null)
+                setChecking(false)
+              })
+              console.log("check:", checking);
+              console.log("available:", isAvailable);
+            }, 500)
+          
+
+        return () => clearTimeout(timer)
+    }, [email])
+
 
     // next step용
     const goToNextStep = (nextStep: number) => {
@@ -45,12 +82,6 @@ export default function SignupPage() {
         }
     }
 
-    // const handleUsernameSubmit = () => {
-    //     if (username) {
-    //         goToNextStep(4)
-    //     }
-    // }
-
     // 비밀번호 입력
     const handlePasswordSubmit = () => {
         if (password && password === confirmPassword) {
@@ -60,9 +91,11 @@ export default function SignupPage() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-white py-12">
-            {/* Logo */}
+            {/* 로고 */}
             <div className="mb-8 text-center">
-                <h4 className="text-2xl font-bold text-black">YOUDY</h4>
+                <Link href="/main">
+                    <h4 className="text-2xl font-bold text-black">YOUDY</h4>
+                </Link>
             </div>
             <div className="w-full max-w-md p-8 space-y-8 bg-white border border-gray-200 rounded-lg shadow-sm">
                 {/* 진행단계 */}
@@ -105,7 +138,11 @@ export default function SignupPage() {
                                         id="email"
                                         type="email"
                                         value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                            console.log("input change:", e);
+                                            setEmail(e.target.value)
+                                            console.log(email);
+                                        }}
                                         placeholder="example@email.com"
                                         className="border-gray-300 focus:border-black focus:ring-black"
                                     />
@@ -114,6 +151,11 @@ export default function SignupPage() {
                                     </Button>
                                 </div>
                             </div>
+                        </div>
+                        <div className="text-xs mt-1 ml-2">
+                            {/* 결과 메시지 */}
+                            {isAvailable === true && <p className="text-blue-500">사용 가능한 이메일입니다</p>}
+                            {isAvailable === false || null && <p>이미 사용 중인 이메일입니다</p>}
                         </div>
                     </div>
 
