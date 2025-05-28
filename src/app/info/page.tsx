@@ -1,5 +1,6 @@
 "use client";
 
+import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useRef, useState } from "react";
 import Link from "next/link";
@@ -21,6 +22,7 @@ export default function Page() {
 
   return (
     <>
+    <Header/>
       <div className="relative flex flex-col items-center justify-between min-h-screen px-4 py-4">
         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl my-8 pb-12">
           <p className="text-xs tracking-tight text-left w-full mb-4 pb-4 border-b">
