@@ -8,7 +8,7 @@ import { CheckCircle } from "lucide-react"
 import api from "@/utils/api";
 import Link from "next/link"
 
-export default function SignupPage() {
+export default function Page() {
     const [currentStep, setCurrentStep] = useState<number>(1)
     const [email, setEmail] = useState<string>("")
     const [verificationCode, setVerificationCode] = useState<string>("")
@@ -17,6 +17,7 @@ export default function SignupPage() {
     const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false)
     const [isCodeVerified, setIsCodeVerified] = useState<boolean>(false)
     const [animating, setAnimating] = useState<boolean>(false)
+    const [showVerificationInput, setShowVerificationInput] = useState(false)
 
     const totalSteps = 4
 
@@ -70,7 +71,8 @@ export default function SignupPage() {
         // validation필요
         if (email && email.includes("@")) {
             setIsEmailVerified(true)
-            goToNextStep(2)
+            setShowVerificationInput(true)
+            // goToNextStep(2)
         }
     }
 
@@ -116,48 +118,73 @@ export default function SignupPage() {
                 <div className="relative">
                     {/* Step 1: 이메일 입력 */}
                     <div
-                        className={`w-full transition-all duration-300 ease-in-out ${currentStep === 1
-                            ? "opacity-100 translate-x-0"
-                            : currentStep < 1
-                                ? "opacity-0 translate-x-full"
-                                : "opacity-0 -translate-x-full"
-                            }`}
-                        style={{
-                            display: currentStep === 1 || animating ? "block" : "none",
-                            position: currentStep === 1 ? "relative" : "absolute",
-                        }}
+            className={`w-full transition-all duration-300 ease-in-out ${
+              currentStep === 1
+                ? "opacity-100 translate-x-0"
+                : currentStep < 1
+                  ? "opacity-0 translate-x-full"
+                  : "opacity-0 -translate-x-full"
+            }`}
+            style={{
+              display: currentStep === 1 || animating ? "block" : "none",
+              position: currentStep === 1 ? "relative" : "absolute",
+            }}
+          >
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-center text-black">이메일 인증</h2>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-black">
+                    이메일
+                  </Label>
+                  <div className="flex space-x-2">
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="example@email.com"
+                      className="border-gray-300 focus:border-black focus:ring-black"
+                      disabled={isEmailVerified}
+                    />
+                    <Button
+                      onClick={handleEmailVerification}
+                      className="bg-black hover:bg-gray-800 text-white"
+                      disabled={isEmailVerified}
                     >
-                        <div className="space-y-6">
-                            <h2 className="text-2xl font-bold text-center text-black">이메일 인증</h2>
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-black">
-                                    이메일
-                                </Label>
-                                <div className="flex space-x-2">
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={email}
-                                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                            console.log("input change:", e);
-                                            setEmail(e.target.value)
-                                            console.log(email);
-                                        }}
-                                        placeholder="example@email.com"
-                                        className="border-gray-300 focus:border-black focus:ring-black"
-                                    />
-                                    <Button onClick={handleEmailVerification} className="bg-black hover:bg-gray-800 text-white">
-                                        인증
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="text-xs mt-1 ml-2">
-                            {/* 결과 메시지 */}
-                            {isAvailable === true && <p className="text-blue-500">사용 가능한 이메일입니다</p>}
-                            {isAvailable === false || null && <p>이미 사용 중인 이메일입니다</p>}
-                        </div>
-                    </div>
+                      {isEmailVerified ? "전송됨" : "인증"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Verification Code Input - appears after email verification */}
+                {showVerificationInput && (
+                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                    <Label htmlFor="verificationCodeStep1" className="text-black">
+                      인증번호
+                    </Label>
+                    <Input
+                      id="verificationCodeStep1"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      placeholder="인증번호 6자리"
+                      className="border-gray-300 focus:border-black focus:ring-black"
+                    />
+                    <Button
+                      onClick={handleCodeVerification}
+                      className="w-full bg-black hover:bg-gray-800 text-white mt-4"
+                    >
+                      확인
+                    </Button>
+                  </div>
+                )}
+
+                {isEmailVerified && !showVerificationInput && (
+                  <p className="text-sm text-gray-600 text-center">인증번호가 이메일로 전송되었습니다.</p>
+                )}
+              </div>
+            </div>
+          </div>
 
                     {/* Step 2: 이메일 인증 코드  */}
                     <div

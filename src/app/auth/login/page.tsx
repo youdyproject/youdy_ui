@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { useState, ChangeEvent } from "react";
 import { setLocalItem } from "@/utils/storage";
 import { useRouter } from "next/navigation";
+import { tokenManager } from '@/lib/tokenManager';
 import api from "@/utils/api";
 import Link from "next/link";
 
@@ -34,7 +35,8 @@ export default function Page() {
     
           console.log("로그인 성공:", response.data);
           
-          setLocalItem("token", response.data.data.accessToken);    // accessToken저장
+          tokenManager.setToken(response.data.accessToken); // accessToken 메모리 저장
+
 
           console.log("localStrage:", localStorage);
     

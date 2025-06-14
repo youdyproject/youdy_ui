@@ -5,7 +5,7 @@ import { Play, Pause } from "lucide-react"
 
 export default function StudyTimeline() {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isStudyMode, setIsStudyMode] = useState(true)
+  const [isStudyMode, setIsStudyMode] = useState(false) // 처음엔 REST(false)로 시작
 
   // 시간 슬롯 생성 (6-12, 1-5, 6-12, 1-5)
   const timeSlots = [
@@ -16,7 +16,7 @@ export default function StudyTimeline() {
   ]
 
   // 하이라이트된 셀 정의
-  const highlightedCells : Record<number, number[]> = {
+  const highlightedCells : Record<number, number[]> =  {
     // 행 인덱스: [열 인덱스 배열]
     11: [2, 3, 4], // 4시 행의 3-5열
     12: [0, 1, 2], // 5시 행의 1-3열
@@ -42,21 +42,22 @@ export default function StudyTimeline() {
             <div className="text-sm font-medium">01h 37m</div>
           </div>
 
-          <div className="flex items-center bg-gray-200 rounded-full p-1">
-            <button
-              className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                isStudyMode ? "bg-white shadow-sm" : "text-gray-600"
-              }`}
-              onClick={() => isStudyMode || toggleStudyMode()}
-            >
+          {/* 토글 스위치 */}
+          <div
+            className="relative w-16 h-8 bg-gray-400 rounded-full cursor-pointer transition-colors duration-200"
+            onClick={toggleStudyMode}
+          >
+            {/* STUDY 텍스트 */}
+            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs font-medium text-white">
               STUDY
-            </button>
-            <button
-              className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                !isStudyMode ? "bg-white shadow-sm" : "text-gray-600"
+            </span>
+
+            {/* 흰색 원형 버튼 */}
+            <div
+              className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-sm transition-all duration-200 ${
+                isStudyMode ? "left-1" : "left-9"
               }`}
-              onClick={() => isStudyMode && toggleStudyMode()}
-            ></button>
+            />
           </div>
         </div>
 
@@ -75,11 +76,11 @@ export default function StudyTimeline() {
                   </td>
 
                   {/* 그리드 셀 - 5개 열 */}
-                  {Array.from({ length: 5 }).map((_, colIndex) => {
+                  {Array.from({ length: 6 }).map((_, colIndex) => {
                     // 특정 셀에 회색 배경 추가
                     const isHighlighted = highlightedCells[rowIndex]?.includes(colIndex)
                     const isLastRow = rowIndex === timeSlots.length - 1
-                    const isLastCol = colIndex === 4
+                    const isLastCol = colIndex === 5
 
                     return (
                       <td
