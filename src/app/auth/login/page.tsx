@@ -35,12 +35,13 @@ export default function Page() {
     
           console.log("로그인 성공:", response.data);
           
-          tokenManager.setToken(response.data.accessToken); // accessToken 메모리 저장
+          tokenManager.setToken(response.data.data.accessToken); // accessToken 메모리 저장
 
+          debugger;
 
           console.log("localStrage:", localStorage);
     
-          //router.push("/dashboard");  // 로그인 성공시 페이지 이동
+          router.push("/main");  // 로그인 성공시 페이지 이동
     
         } catch (error: any) {
           console.error("로그인 실패:", error.response?.data || error.message);

@@ -1,14 +1,21 @@
 import axios from "axios";
 import { tokenManager } from "@/lib/tokenManager";
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: "http://localhost:8088", // 개발용 백엔드 주소
   headers: {
     FrontToken : "youdyfronttoken",
-
   },
 });
 
+// 별도의 axios 인스턴스 (무한 루프 방지용)
+const authApi = axios.create({
+  baseURL: "http://localhost:8088",
+  headers: {
+    FrontToken : "youdyfronttoken",
+    'Content-Type': 'application/json'
+  },
+});
 
 /* 토큰 interceptors */
 api.interceptors.request.use(async (config) => {
@@ -16,6 +23,8 @@ api.interceptors.request.use(async (config) => {
   
   if (token) {
     console.log('토큰 검증을 시작합니다. 토큰:', token ? '존재함' : '없음');
+
+    debugger;
     
     // 매번 토큰 검증 API 호출
     const isValid = await validateToken(token);
@@ -32,16 +41,22 @@ api.interceptors.request.use(async (config) => {
           // 갱신 실패 시 로그아웃
           console.log('토큰 갱신 실패. 로그아웃 처리합니다.');
           tokenManager.clearToken();
+
+          debugger;
+
           if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+            window.location.href = '/auth/login';
           }
           return Promise.reject(new Error('토큰 갱신 실패'));
         }
       } catch (error) {
         console.error('토큰 갱신 중 오류:', error);
+
+        debugger; 
+
         tokenManager.clearToken();
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/auth/login';
         }
         return Promise.reject(error);
       }
@@ -75,7 +90,7 @@ api.interceptors.response.use(
         // 갱신 실패 시 로그아웃
         tokenManager.clearToken();
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/auth/login';
         }
       }
     }
@@ -83,38 +98,39 @@ api.interceptors.response.use(
   }
 );
 
-// 토큰 검증 API 호출 함수
+// 토큰 검증 API 호출 함수 (별도 axios 인스턴스 사용)
 async function validateToken(token: string): Promise<boolean> {
+
+  debugger;
+
   if (!token) return false;
   
   try {
-    const response = await fetch('/api/auth/token/validate', {
-      method: 'POST',
+    const response = await authApi.get('/api/auth/token/validate', {
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
-      credentials: 'include'
+      }
     });
+
+    debugger;
     
-    return response.ok;
+    return response.status === 200;
   } catch (error) {
     console.error('토큰 검증 API 호출 오류:', error);
     return false;
   }
 }
 
-// 토큰 갱신 함수
+// 토큰 갱신 함수 (별도 axios 인스턴스 사용)
 async function refreshToken(): Promise<string | null> {
   try {
     console.log('토큰 갱신 요청');
-    const response = await fetch('/api/auth/token/refresh', {
-      method: 'POST',
-      credentials: 'include', // httponly쿠키
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
+    const response = await authApi.get('/api/auth/token/refresh');
+
+    debugger;
+
+    if (response.status === 200) {
+      const data = response.data;
       tokenManager.setToken(data.accessToken); // 새 토큰 저장
       console.log('토큰 갱신 성공');
       return data.accessToken;
@@ -126,34 +142,5 @@ async function refreshToken(): Promise<string | null> {
   }
   return null;
 }
-
-/*
-// Redis 기반 토큰 갱신 함수
-async function refreshToken(): Promise<string | null> {
-  try {
-    // 🎯 기존 accessToken을 사용해서 갱신 요청
-    const currentToken = tokenManager.getToken();
-    
-    const response = await fetch('/api/auth/refresh', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // 기존 토큰을 헤더에 포함 (서버에서 Redis 조회용)
-        'Authorization': `Bearer ${currentToken}`
-      },
-      // credentials: 'include', // 👈 필요 없음!
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      tokenManager.setToken(data.accessToken);
-      return data.accessToken;
-    }
-  } catch (error) {
-    console.error('토큰 갱신 실패:', error);
-  }
-  return null;
-}
-*/
 
 export default api;
