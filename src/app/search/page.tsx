@@ -30,7 +30,6 @@ interface YoutubeVideoItem {
 
 export default function Page() {
   const [videos, setVideos] = useState<YoutubeVideoItem[]>([]);
-
   const fetchYoutubeData = async () => {
     try {
       const res = await api.get("/api/youtube/video/list", {
@@ -46,12 +45,24 @@ export default function Page() {
     fetchYoutubeData();
   }, []);
 
+  const registerViewHistory = async (video: YoutubeVideoItem) => {
+    try {
+      await api.post("/api/view/reg/hist", {
+        videoId: video.id.videoId || "",
+        kind: video.id.kind || "",
+        playListId: video.id.playlistId || "",
+      });
+      console.log("시청 기록 등록 성공");
+    } catch (err) {
+      console.error("시청 기록 등록 실패", err);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
 
-      <div className="flex flex-col md:flex-row">
-        {/* 왼쪽: 검색 결과 */}
+      <main className="flex flex-col md:flex-row flex-1">
         <div className="w-full md:w-[80%] p-4 md:p-6 space-y-6">
           <div className="text-base font-bold">
             ‘자바’에 대한 서비스 검색결과입니다.
@@ -59,7 +70,11 @@ export default function Page() {
 
           {videos.length > 0 ? (
             videos.map((video, index) => (
-              <div key={index} className="flex gap-4">
+              <div
+                key={index}
+                className="flex gap-4 cursor-pointer"
+                onClick={() => registerViewHistory(video)}
+              >
                 <img
                   src={video.snippet.thumbnails.medium.url}
                   alt={video.snippet.title}
@@ -87,12 +102,12 @@ export default function Page() {
           )}
         </div>
 
-        <div className="w-full md:w-[20%] p-4 self-start">
-          <div className="sticky top-[72px]"> 
+        <div className="w-full md:w-[20%] p-4 flex-shrink-0 relative">
+          <div className="sticky top-0">
             <StudyTimeline />
           </div>
         </div>
-      </div>
+      </main>
       <TopButton />
       <Footer />
     </div>
