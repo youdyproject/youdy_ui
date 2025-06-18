@@ -3,13 +3,44 @@
 import { Bell, Search, User } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation"
+import { useState, useRef, useEffect } from "react"
+import api from "@/utils/api";
 
 export default function Header() {
+
+  const router = useRouter();
   const pathname = usePathname()
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen)
+  }
+
+  const handleLogout = () => {
+    api.get("/api/auth/logout");
+    router.push("/intro");
+    console.log("로그아웃")
+    setIsProfileDropdownOpen(false)
+  }
 
   return (
-    <header className="w-full border-b border-gray-100 bg-white py-3">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white py-3">
       <div className="w-full flex items-center px-6 md:px-10">
         {/* 로고 */}
         <Link href="/main" className="flex items-center mr-8 space-x-2">
@@ -81,17 +112,33 @@ export default function Header() {
         </div>
 
         {/* 알림 & 유저 */}
-        <div className="flex items-center space-x-4">
-          <button className="relative rounded-full p-1 hover:bg-gray-100">
-            <Bell className="h-6 w-6 text-gray-600" />
-            <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-              1
-            </span>
-          </button>
-          <Link href="/info" className="rounded-full bg-gray-200 p-1">
-            <User className="h-6 w-6 text-gray-600"/> 
-          </Link>
-        </div>
+        <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={toggleProfileDropdown}
+              className="rounded-full bg-gray-200 p-1 hover:bg-gray-300 transition-colors"
+            >
+              <User className="h-6 w-6 text-gray-600" />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isProfileDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-gray-200 ring-opacity-5 z-50">
+                <Link
+                  href="/info"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  onClick={() => setIsProfileDropdownOpen(false)}
+                >
+                  마이페이지
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  로그아웃
+                </button>
+              </div>
+            )}
+          </div>
       </div>
     </header>
   )
