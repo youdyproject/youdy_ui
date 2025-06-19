@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
+import { logout } from "@/lib/logout";
 import api from "@/utils/api";
 
 export default function Header() {
@@ -33,9 +34,7 @@ export default function Header() {
   }
 
   const handleLogout = () => {
-    api.get("/api/auth/logout");
-    router.push("/intro");
-    console.log("로그아웃")
+    logout();
     setIsProfileDropdownOpen(false)
   }
 
@@ -113,32 +112,32 @@ export default function Header() {
 
         {/* 알림 & 유저 */}
         <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={toggleProfileDropdown}
-              className="rounded-full bg-gray-200 p-1 hover:bg-gray-300 transition-colors"
-            >
-              <User className="h-6 w-6 text-gray-600" />
-            </button>
+          <button
+            onClick={toggleProfileDropdown}
+            className="cursor-pointer rounded-full bg-gray-200 p-1 hover:bg-gray-300 transition-colors"
+          >
+            <User className="cursor-pointer h-6 w-6 text-gray-600" />
+          </button>
 
-            {/* Dropdown Menu */}
-            {isProfileDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-gray-200 ring-opacity-5 z-50">
-                <Link
-                  href="/info"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={() => setIsProfileDropdownOpen(false)}
-                >
-                  마이페이지
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  로그아웃
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Dropdown Menu */}
+          {isProfileDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-gray-200 ring-opacity-5 z-50">
+              <Link
+                href="/info"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={() => setIsProfileDropdownOpen(false)}
+              >
+                마이페이지
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="cursor-pointer block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                로그아웃
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )
