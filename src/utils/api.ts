@@ -1,9 +1,9 @@
 import axios from "axios";
 import { tokenManager } from "@/lib/tokenManager";
-import { useRouter } from 'next/navigation';
+//import { useRouter } from 'next/navigation'; 민영아 라우터때문에 오류나서 잠깐 주석해놨어
 import { logout } from "@/lib/logout";
 
-const router = useRouter();
+//const router = useRouter(); 민영아 라우터때문에 오류나서 잠깐 주석해놨어 
 
 /* 토큰 검증용 api */
 export const authApi = axios.create({

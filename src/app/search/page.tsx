@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
+import { tokenManager } from "@/lib/tokenManager";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StudyTimeline from "@/components/layout/StudyTimeline";
@@ -29,39 +31,42 @@ interface YoutubeVideoItem {
 }
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const keyword = searchParams.get("keyword") || "";
   const [videos, setVideos] = useState<YoutubeVideoItem[]>([]);
   const viewedIdsRef = useRef<Set<string>>(new Set());
 
-  const fetchYoutubeData = async () => {
-    try {
-      const res = await api.get("/api/youtube/video/list", {
-        params: { keyword: "자바" },
-      });
-      setVideos(res.data.data.items);
-    } catch (err) {
-      console.error("유튜브 API 호출 실패", err);
-    }
-  };
-
   useEffect(() => {
+    console.log("[SearchPage] URL keyword =", keyword);
+    if (!keyword.trim()) return;
+
+    const fetchYoutubeData = async () => {
+      try {
+        const token = tokenManager.getToken();
+        const res = await api.get("/api/youtube/video/list", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { keyword },
+        });
+        setVideos(res.data.data.items);
+      } catch (err) {
+        console.error("유튜브 API 호출 실패", err);
+      }
+    };
+
     fetchYoutubeData();
-  }, []);
+  }, [keyword]);
 
   const registerViewHistory = async (video: YoutubeVideoItem) => {
     const videoId = video.id.videoId || "";
-    if (viewedIdsRef.current.has(videoId)) {
-      console.log("이미 등록된 시청 기록:", videoId);
-      return;
-    }
+    if (viewedIdsRef.current.has(videoId)) return;
 
     try {
       await api.post("/api/view/reg/hist", {
-        videoId: videoId,
+        videoId,
         kind: video.id.kind || "",
         playListId: video.id.playlistId || "",
       });
-      viewedIdsRef.current.add(videoId); 
-      console.log("시청 기록 등록 성공:", videoId);
+      viewedIdsRef.current.add(videoId);
     } catch (err) {
       console.error("시청 기록 등록 실패", err);
     }
@@ -71,10 +76,10 @@ export default function Page() {
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
 
-      <div className="flex flex-col md:flex-row flex-1">
+      <main className="flex flex-col md:flex-row flex-1">
         <div className="w-full md:w-[80%] p-4 md:p-6 space-y-6">
           <div className="text-base font-bold">
-            ‘자바’에 대한 서비스 검색결과입니다.
+            ‘{keyword}’에 대한 서비스 검색결과입니다.
           </div>
 
           {videos.length > 0 ? (
@@ -92,17 +97,15 @@ export default function Page() {
                   className="rounded-lg w-[260px] h-[146px] object-cover"
                 />
                 <div className="flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {video.snippet.title}
-                    </h3>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {video.snippet.channelTitle}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      {video.snippet.description}
-                    </p>
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {video.snippet.title}
+                  </h3>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {video.snippet.channelTitle}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {video.snippet.description}
+                  </p>
                 </div>
               </div>
             ))
@@ -116,7 +119,7 @@ export default function Page() {
             <StudyTimeline />
           </div>
         </div>
-      </div>
+      </main>
 
       <TopButton />
       <Footer />
