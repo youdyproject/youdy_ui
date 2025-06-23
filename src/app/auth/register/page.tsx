@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { CheckCircle } from "lucide-react"
+import AuthTimer from "./authTimer"
 import api from "@/utils/api";
 import Link from "next/link"
 
@@ -18,21 +19,96 @@ export default function Page() {
     const [isCodeVerified, setIsCodeVerified] = useState<boolean>(false)
     const [animating, setAnimating] = useState<boolean>(false)
     const [showVerificationInput, setShowVerificationInput] = useState(false)
+    const [emailErrMsg, setEmailErrMsg] = useState<string>("");
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        codeVerified: '',
+    });
 
     const totalSteps = 4
 
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
     const [checking, setChecking] = useState(false)
 
+    const handleTimeOver = () => {
+        console.log('타이머 종료!');
+        // 예: 입력 비활성화, 메시지 출력 등
+      };
+
     // 실시간 중복 체크 로직 (입력할 때마다 500ms 기다려서 실행)
-    useEffect(() => {
-        console.log("useeffect실행중")
-        if (!email || !email.includes('@')) return
+    // useEffect(() => {
 
-        const timer = setTimeout(() => {
-        setChecking(true)
+    //     const timer = setTimeout(() => {
+    //     setChecking(true)
 
-        const url = "/api/member/email/dup?email=" + email
+    //     const url = "/api/member/email/dup?email=" + email
+
+    //     const response = api.get(url, 
+    //         {
+    //             headers: {
+    //                 FrontToken : "youdyfronttoken"
+    //             }
+    //         }).then((res) => {
+    //             console.log("res:", res);
+    //             setIsAvailable(res.data.success)
+    //             setChecking(false)
+    //           })
+    //           .catch(() => {
+    //             setIsAvailable(null)
+    //             setChecking(false)
+    //           })
+    //           console.log("check:", checking);
+    //           console.log("available:", isAvailable);
+    //         }, 500)
+          
+
+    //     return () => clearTimeout(timer)
+    // }, [email])
+
+
+    // next step용
+    const goToNextStep = (nextStep: number) => {
+        setAnimating(true)
+        setTimeout(() => {
+            setCurrentStep(nextStep)
+            setAnimating(false)
+        }, 300)
+    }
+
+    /* 이메일 validation */
+    const isValidEmail = (email: string): boolean => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    };
+
+    /* 이메일 입력 시 */
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+      
+        // 유효성 검사 실행
+        if (value.length === 0) {
+            setEmailErrMsg('이메일을 입력해주세요.');
+        } else if (!isValidEmail(value)) {
+            setEmailErrMsg('올바른 이메일 형식이 아닙니다.');
+        } else {
+            setEmailErrMsg("");
+        }
+        // 이메일 상태 업데이트
+        setFormData((prev) => ({
+          ...prev,
+          email: value,
+        }));
+
+      };
+
+    /* 이메일 인증버튼 클릭 */
+    const handleEmailVerification = () => {
+
+        setIsEmailVerified(true)    // 버튼비활성화
+        setShowVerificationInput(true)  // 인증번호 폼 활성화 
+
+        const url = "/api/member/email/dup?email=" + formData.email
 
         const response = api.get(url, 
             {
@@ -50,30 +126,6 @@ export default function Page() {
               })
               console.log("check:", checking);
               console.log("available:", isAvailable);
-            }, 500)
-          
-
-        return () => clearTimeout(timer)
-    }, [email])
-
-
-    // next step용
-    const goToNextStep = (nextStep: number) => {
-        setAnimating(true)
-        setTimeout(() => {
-            setCurrentStep(nextStep)
-            setAnimating(false)
-        }, 300)
-    }
-
-    // 이메일 입력
-    const handleEmailVerification = () => {
-        // validation필요
-        if (email && email.includes("@")) {
-            setIsEmailVerified(true)
-            setShowVerificationInput(true)
-            // goToNextStep(2)
-        }
     }
 
     // 인증번호 + 타이머
@@ -118,18 +170,18 @@ export default function Page() {
                 <div className="relative">
                     {/* Step 1: 이메일 입력 */}
                     <div
-            className={`w-full transition-all duration-300 ease-in-out ${
-              currentStep === 1
-                ? "opacity-100 translate-x-0"
-                : currentStep < 1
-                  ? "opacity-0 translate-x-full"
-                  : "opacity-0 -translate-x-full"
-            }`}
-            style={{
-              display: currentStep === 1 || animating ? "block" : "none",
-              position: currentStep === 1 ? "relative" : "absolute",
-            }}
-          >
+                    className={`w-full transition-all duration-300 ease-in-out ${
+                    currentStep === 1
+                        ? "opacity-100 translate-x-0"
+                        : currentStep < 1
+                        ? "opacity-0 translate-x-full"
+                        : "opacity-0 -translate-x-full"
+                    }`}
+                    style={{
+                    display: currentStep === 1 || animating ? "block" : "none",
+                    position: currentStep === 1 ? "relative" : "absolute",
+                    }}
+                    >
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-center text-black">이메일 인증</h2>
               <div className="space-y-4">
@@ -141,8 +193,8 @@ export default function Page() {
                     <Input
                       id="email"
                       type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={formData.email}
+                      onChange={handleEmailChange}
                       placeholder="example@email.com"
                       className="border-gray-300 focus:border-black focus:ring-black"
                       disabled={isEmailVerified}
@@ -150,14 +202,18 @@ export default function Page() {
                     <Button
                       onClick={handleEmailVerification}
                       className="bg-black hover:bg-gray-800 text-white"
-                      disabled={isEmailVerified}
+                      disabled={isEmailVerified || !formData.email || !!emailErrMsg}
                     >
                       {isEmailVerified ? "전송됨" : "인증"}
                     </Button>
                   </div>
+                {/* 이메일 유효성 문구 */}
+                {emailErrMsg && (
+                    <p className="text-red-500 text-sm mt-1">올바른 이메일 형식이 아닙니다.</p>
+                )}
                 </div>
 
-                {/* Verification Code Input - appears after email verification */}
+                {/* 인증번호 입력 */}
                 {showVerificationInput && (
                   <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                     <Label htmlFor="verificationCodeStep1" className="text-black">
@@ -205,13 +261,25 @@ export default function Page() {
                                 <Label htmlFor="verificationCode" className="text-black">
                                     인증번호
                                 </Label>
-                                <Input
+                                <div className="relative">
+                                    <Input
+                                        id="verificationCode"
+                                        value={verificationCode}
+                                        onChange={(e) => setVerificationCode(e.target.value)}
+                                        placeholder="인증번호 6자리"
+                                        className="pr-16 border-gray-300 focus:border-black focus:ring-black"
+                                    />
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                                        <AuthTimer activeTimer={handleTimeOver} />
+                                    </span>
+                                    </div>
+                                {/* <Input
                                     id="verificationCode"
                                     value={verificationCode}
                                     onChange={(e) => setVerificationCode(e.target.value)}
                                     placeholder="인증번호 6자리"
                                     className="border-gray-300 focus:border-black focus:ring-black"
-                                />
+                                /> */}
                                 <Button onClick={handleCodeVerification} className="w-full bg-black hover:bg-gray-800 text-white mt-4">
                                     확인
                                 </Button>
