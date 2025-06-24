@@ -34,7 +34,7 @@ export default function Page() {
     const handleTimeOver = () => {
         console.log('타이머 종료!');
         // 예: 입력 비활성화, 메시지 출력 등
-      };
+    };
 
     // 실시간 중복 체크 로직 (입력할 때마다 500ms 기다려서 실행)
     // useEffect(() => {
@@ -61,7 +61,7 @@ export default function Page() {
     //           console.log("check:", checking);
     //           console.log("available:", isAvailable);
     //         }, 500)
-          
+
 
     //     return () => clearTimeout(timer)
     // }, [email])
@@ -85,7 +85,7 @@ export default function Page() {
     /* 이메일 입력 시 */
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-      
+
         // 유효성 검사 실행
         if (value.length === 0) {
             setEmailErrMsg('이메일을 입력해주세요.');
@@ -96,11 +96,11 @@ export default function Page() {
         }
         // 이메일 상태 업데이트
         setFormData((prev) => ({
-          ...prev,
-          email: value,
+            ...prev,
+            email: value,
         }));
 
-      };
+    };
 
     /* 이메일 인증버튼 클릭 */
     const handleEmailVerification = () => {
@@ -110,22 +110,22 @@ export default function Page() {
 
         const url = "/api/member/email/dup?email=" + formData.email
 
-        const response = api.get(url, 
+        const response = api.get(url,
             {
                 headers: {
-                    FrontToken : "youdyfronttoken"
+                    FrontToken: "youdyfronttoken"
                 }
             }).then((res) => {
                 console.log("res:", res);
                 setIsAvailable(res.data.success)
                 setChecking(false)
-              })
-              .catch(() => {
+            })
+            .catch(() => {
                 setIsAvailable(null)
                 setChecking(false)
-              })
-              console.log("check:", checking);
-              console.log("available:", isAvailable);
+            })
+        console.log("check:", checking);
+        console.log("available:", isAvailable);
     }
 
     // 인증번호 + 타이머
@@ -170,157 +170,80 @@ export default function Page() {
                 <div className="relative">
                     {/* Step 1: 이메일 입력 */}
                     <div
-                    className={`w-full transition-all duration-300 ease-in-out ${
-                    currentStep === 1
-                        ? "opacity-100 translate-x-0"
-                        : currentStep < 1
-                        ? "opacity-0 translate-x-full"
-                        : "opacity-0 -translate-x-full"
-                    }`}
-                    style={{
-                    display: currentStep === 1 || animating ? "block" : "none",
-                    position: currentStep === 1 ? "relative" : "absolute",
-                    }}
-                    >
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-center text-black">이메일 인증</h2>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-black">
-                    이메일
-                  </Label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleEmailChange}
-                      placeholder="example@email.com"
-                      className="border-gray-300 focus:border-black focus:ring-black"
-                      disabled={isEmailVerified}
-                    />
-                    <Button
-                      onClick={handleEmailVerification}
-                      className="bg-black hover:bg-gray-800 text-white"
-                      disabled={isEmailVerified || !formData.email || !!emailErrMsg}
-                    >
-                      {isEmailVerified ? "전송됨" : "인증"}
-                    </Button>
-                  </div>
-                {/* 이메일 유효성 문구 */}
-                {emailErrMsg && (
-                    <p className="text-red-500 text-sm mt-1">올바른 이메일 형식이 아닙니다.</p>
-                )}
-                </div>
-
-                {/* 인증번호 입력 */}
-                {showVerificationInput && (
-                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                    <Label htmlFor="verificationCodeStep1" className="text-black">
-                      인증번호
-                    </Label>
-                    <Input
-                      id="verificationCodeStep1"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      placeholder="인증번호 6자리"
-                      className="border-gray-300 focus:border-black focus:ring-black"
-                    />
-                    <Button
-                      onClick={handleCodeVerification}
-                      className="w-full bg-black hover:bg-gray-800 text-white mt-4"
-                    >
-                      확인
-                    </Button>
-                  </div>
-                )}
-
-                {isEmailVerified && !showVerificationInput && (
-                  <p className="text-sm text-gray-600 text-center">인증번호가 이메일로 전송되었습니다.</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-                    {/* Step 2: 이메일 인증 코드  */}
-                    <div
-                        className={`w-full transition-all duration-300 ease-in-out ${currentStep === 2
+                        className={`w-full transition-all duration-300 ease-in-out ${currentStep === 1
                             ? "opacity-100 translate-x-0"
-                            : currentStep < 2
+                            : currentStep < 1
                                 ? "opacity-0 translate-x-full"
                                 : "opacity-0 -translate-x-full"
                             }`}
                         style={{
-                            display: currentStep === 2 || animating ? "block" : "none",
-                            position: currentStep === 2 ? "relative" : "absolute",
+                            display: currentStep === 1 || animating ? "block" : "none",
+                            position: currentStep === 1 ? "relative" : "absolute",
                         }}
                     >
                         <div className="space-y-6">
-                            <h2 className="text-2xl font-bold text-center text-black">인증번호 확인</h2>
-                            <div className="space-y-2">
-                                <Label htmlFor="verificationCode" className="text-black">
-                                    인증번호
-                                </Label>
-                                <div className="relative">
-                                    <Input
-                                        id="verificationCode"
-                                        value={verificationCode}
-                                        onChange={(e) => setVerificationCode(e.target.value)}
-                                        placeholder="인증번호 6자리"
-                                        className="pr-16 border-gray-300 focus:border-black focus:ring-black"
-                                    />
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-                                        <AuthTimer activeTimer={handleTimeOver} />
-                                    </span>
+                            <h2 className="text-2xl font-bold text-center text-black">이메일 인증</h2>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="email" className="text-black">
+                                        이메일
+                                    </Label>
+                                    <div className="flex space-x-2">
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={handleEmailChange}
+                                            placeholder="example@email.com"
+                                            className="border-gray-300 focus:border-black focus:ring-black"
+                                            disabled={isEmailVerified}
+                                        />
+                                        <Button
+                                            onClick={handleEmailVerification}
+                                            className="bg-black hover:bg-gray-800 text-white"
+                                            disabled={isEmailVerified || !formData.email || !!emailErrMsg}
+                                        >
+                                            {isEmailVerified ? "전송됨" : "인증"}
+                                        </Button>
                                     </div>
-                                {/* <Input
-                                    id="verificationCode"
-                                    value={verificationCode}
-                                    onChange={(e) => setVerificationCode(e.target.value)}
-                                    placeholder="인증번호 6자리"
-                                    className="border-gray-300 focus:border-black focus:ring-black"
-                                /> */}
-                                <Button onClick={handleCodeVerification} className="w-full bg-black hover:bg-gray-800 text-white mt-4">
-                                    확인
-                                </Button>
+                                    {/* 이메일 유효성 문구 */}
+                                    {emailErrMsg && (
+                                        <p className="text-red-500 text-sm mt-1">올바른 이메일 형식이 아닙니다.</p>
+                                    )}
+                                </div>
+
+                                {/* 인증번호 입력 */}
+                                {showVerificationInput && (
+                                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="verificationCodeStep1" className="text-black">
+                                                인증번호
+                                            </Label>
+                                            <AuthTimer activeTimer={handleTimeOver} />
+                                        </div>
+                                        <Input
+                                            id="verificationCodeStep1"
+                                            value={verificationCode}
+                                            onChange={(e) => setVerificationCode(e.target.value)}
+                                            placeholder="인증번호 6자리"
+                                            className="border-gray-300 focus:border-black focus:ring-black"
+                                        />
+                                        <Button
+                                            onClick={handleCodeVerification}
+                                            className="w-full bg-black hover:bg-gray-800 text-white mt-4"
+                                        >
+                                            확인
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {isEmailVerified && !showVerificationInput && (
+                                    <p className="text-sm text-gray-600 text-center">인증번호가 이메일로 전송되었습니다.</p>
+                                )}
                             </div>
                         </div>
                     </div>
-
-                    {/* Step 3: 유저ID설정
-                    <div
-                        className={`w-full transition-all duration-300 ease-in-out ${currentStep === 3
-                            ? "opacity-100 translate-x-0"
-                            : currentStep < 3
-                                ? "opacity-0 translate-x-full"
-                                : "opacity-0 -translate-x-full"
-                            }`}
-                        style={{
-                            display: currentStep === 3 || animating ? "block" : "none",
-                            position: currentStep === 3 ? "relative" : "absolute",
-                        }}
-                    >
-                        <div className="space-y-6">
-                            <h2 className="text-2xl font-bold text-center text-black">아이디 설정</h2>
-                            <div className="space-y-2">
-                                <Label htmlFor="username" className="text-black">
-                                    아이디
-                                </Label>
-                                <Input
-                                    id="username"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="사용할 아이디"
-                                    className="border-gray-300 focus:border-black focus:ring-black"
-                                />
-                                <Button onClick={handleUsernameSubmit} className="w-full bg-black hover:bg-gray-800 text-white mt-4">
-                                    다음
-                                </Button>
-                            </div>
-                        </div>
-                    </div> */}
-
-                    {/* Step 3: 비밀번호 설정 */}
+                    {/* Step 2: 비밀번호 설정 */}
                     <div
                         className={`w-full transition-all duration-300 ease-in-out ${currentStep === 3
                             ? "opacity-100 translate-x-0"
