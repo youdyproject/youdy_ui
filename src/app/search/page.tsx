@@ -42,9 +42,10 @@ export default function Page() {
 
     const fetchYoutubeData = async () => {
       try {
-        const token = tokenManager.getToken();
         const res = await api.get("/api/youtube/video/list", {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${tokenManager.getToken()}`, 
+          },
           params: { keyword },
         });
         setVideos(res.data.data.items);
@@ -56,19 +57,35 @@ export default function Page() {
     fetchYoutubeData();
   }, [keyword]);
 
-  const registerViewHistory = async (video: YoutubeVideoItem) => {
-    const videoId = video.id.videoId || "";
-    if (viewedIdsRef.current.has(videoId)) return;
+  const handleVideoClick = async (
+    video: YoutubeVideoItem,
+    e?: React.MouseEvent
+  ) => {
+    if (e) e.preventDefault(); 
 
-    try {
-      await api.post("/api/view/reg/hist", {
-        videoId,
-        kind: video.id.kind || "",
-        playListId: video.id.playlistId || "",
-      });
-      viewedIdsRef.current.add(videoId);
-    } catch (err) {
-      console.error("시청 기록 등록 실패", err);
+    const videoId = video.id.videoId || "";
+    if (!videoId) return;
+
+    if (!viewedIdsRef.current.has(videoId)) {
+      try {
+        await api.post(
+          "/api/view/reg/hist",
+          {
+            videoId,
+            kind: video.id.kind || "",
+            playListId: video.id.playlistId || "",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${tokenManager.getToken()}`, 
+            },
+          }
+        );
+        viewedIdsRef.current.add(videoId);
+        console.log(" 시청 기록 저장 완료");
+      } catch (err) {
+        console.error("시청 기록 등록 실패", err);
+      }
     }
   };
 
@@ -87,7 +104,7 @@ export default function Page() {
               <div
                 key={index}
                 className="flex gap-4 cursor-pointer"
-                onClick={() => registerViewHistory(video)}
+                onClick={(e) => handleVideoClick(video, e)}
               >
                 <img
                   src={video.snippet.thumbnails.medium.url}
@@ -96,7 +113,7 @@ export default function Page() {
                   height={146}
                   className="rounded-lg w-[260px] h-[146px] object-cover"
                 />
-                <div className="flex flex-col justify-between">
+                <div className="flex flex-col justify-between flex-1">
                   <h3 className="text-lg font-semibold text-gray-800">
                     {video.snippet.title}
                   </h3>
