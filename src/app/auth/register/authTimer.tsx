@@ -3,30 +3,47 @@ import { Clock } from "lucide-react"
 
 interface TimerProps {
   activeTimer?: () => void;
+  resetTrigger?: boolean; 
 }
 
-const Timer: React.FC<TimerProps> = ({ activeTimer }) => {
+const Timer: React.FC<TimerProps> = ({ activeTimer, resetTrigger }) => {
   const [remainingTime, setRemainingTime] = useState<number>(179);
+  const [internalReset, setInternalReset] = useState(resetTrigger);
+  const [expired, setExpired] = useState(false); // 타이머 종료 여부
 
+  /* resetTrigger 바뀌면 타이머 초기화 */
   useEffect(() => {
-    console.log("꺄악.");
+    if (resetTrigger !== internalReset) {
+      setRemainingTime(179);
+      setExpired(false); // 리셋 시 종료 상태 초기화
+      setInternalReset(resetTrigger);
+    }
+  }, [resetTrigger, internalReset]);
+
+  /* 타이머 카운트 다운 */
+  useEffect(() => {
     if (remainingTime <= 0) return;
 
     const timerId = setInterval(() => {
-      setRemainingTime(prevTime => {
-        if (prevTime <= 1) {
+      setRemainingTime(prev => {
+        if (prev <= 1) {
           clearInterval(timerId);
-          if (typeof activeTimer === 'function') {
-            activeTimer();
-          }
+          setExpired(true); // 종료 상태 변경만
           return 0;
         }
-        return prevTime - 1;
+        return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [remainingTime, activeTimer]);
+  }, [remainingTime]);
+
+  /* 타이머가 0이 되면 activeTimer 실행 */
+  useEffect(() => {
+    if (expired && typeof activeTimer === 'function') {
+      activeTimer();
+    }
+  }, [expired, activeTimer]);
 
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime % 60;
@@ -35,10 +52,9 @@ const Timer: React.FC<TimerProps> = ({ activeTimer }) => {
     <div className="flex items-center space-x-1 text-xs">
       <Clock size={16} className="text-gray-500" />
       <span>
-        {minutes}분 {seconds}초
+        {minutes}:{seconds.toString().padStart(2, '0')}
       </span>
     </div>
-    // <span><Clock size={16} className="text-gray-500" /> {minutes}분 {seconds}초</span>
   );
 };
 
