@@ -18,12 +18,10 @@ export default function Page() {
     const [errMsg, setErrMsg] = useState<string>("");
     const [pwdErrMsg, setPwdErrMsg] = useState<string>("");
     const [codeErrMsg, setCodeErrMsg] = useState<string>("");
-    const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
     const [resetTimerKey, setResetTimerKey] = useState(false);
     const [codeInput, setCodeInput] = useState<boolean>(false);
-    const [showPassword, setShowPassword] = useState(false)
-    const [showPasswordChk, setShowPasswordChk] = useState(false)
-    const [checking, setChecking] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordChk, setShowPasswordChk] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -82,30 +80,27 @@ export default function Page() {
     };
 
     /* 이메일 인증버튼 클릭 */
-    const handleEmailVerification = () => {
-
-        setIsEmailVerified(true)    // email input 비활성화
-        setShowVerificationInput(true)  // 인증번호 폼 활성화 
-        setResetTimerKey(prev => !prev); // 재전송시 타이머 리셋
+    const handleEmailVerification = async() => {
 
         const url = "/api/member/email/dup?email=" + formData.email
 
-        const response = api.get(url,
-            {
-                headers: {
-                    FrontToken: "youdyfronttoken"
-                }
-            }).then((res) => {
-                console.log("res:", res);
-                setIsAvailable(res.data.success)
-                setChecking(false)
-            })
-            .catch(() => {
-                setIsAvailable(null)
-                setChecking(false)
-            })
-        console.log("check:", checking);
-        console.log("available:", isAvailable);
+        try {
+
+            const response = await api.get(url);
+
+            // 중복체크 성공 시 폼/타이머 활성화, 실패 시 메시지 노출
+            if (response.data.data === true) {
+                setIsEmailVerified(true)    // email input 비활성화
+                setShowVerificationInput(true)  // 인증번호 폼 활성화 
+                setResetTimerKey(prev => !prev); // 재전송시 타이머 리셋
+            } else {
+                setErrMsg("이미 사용중인 이메일입니다.");
+            }
+
+        } catch (error: any) {
+            console.error("이메일 중복/메일 에러:", error.response?.data || error.message)
+            setErrMsg("이메일 발송 중 에러가 발생했습니다. 관리자에게 문의해 주세요.");
+        }
     }
 
     /* 인증번호 validation + 검증 */
@@ -265,7 +260,7 @@ export default function Page() {
                                         <Button
                                             onClick={handleEmailVerification}
                                             className="bg-black hover:bg-gray-800 text-white"
-                                            disabled={!formData.email || !!errMsg}
+                                            disabled={!formData.email && !!errMsg}
                                         >
                                             {isEmailVerified ? "재전송" : "인증"}
                                         </Button>
