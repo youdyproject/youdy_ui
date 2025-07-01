@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { logout } from "@/lib/logout";
+import { useProfile } from "@/lib/profileContext";
 
 export default function Header() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [keyword, setKeyword] = useState("");
+
+  const { profileImage } = useProfile();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -24,11 +27,8 @@ export default function Header() {
         setIsProfileDropdownOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleProfileDropdown = () => {
@@ -40,18 +40,15 @@ export default function Header() {
     setIsProfileDropdownOpen(false);
   };
 
- 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!keyword.trim()) return;
-    console.log("[Header] 🔍 엔터 submit: ", keyword);
     router.push(`/search?keyword=${encodeURIComponent(keyword)}`);
   };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white py-3">
       <div className="w-full flex items-center px-6 md:px-10">
-        {/* 로고 */}
         <Link href="/main" className="flex items-center mr-8 space-x-2">
           <Image
             src="/YouTubeLogo.png"
@@ -64,7 +61,6 @@ export default function Header() {
           <span className="text-lg font-semibold">Youdy</span>
         </Link>
 
-        {/* 메뉴 */}
         <nav className="hidden md:flex">
           <ul className="flex space-x-8">
             {[
@@ -80,7 +76,9 @@ export default function Header() {
                   {label}
                   <span
                     className="absolute bottom-0 h-0.5 w-full origin-left scale-x-0 transform bg-red-500 transition-transform duration-200 ease-out group-hover:scale-x-100"
-                    data-active={pathname === href || pathname.startsWith(`${href}/`)}
+                    data-active={
+                      pathname === href || pathname.startsWith(`${href}/`)
+                    }
                   />
                 </Link>
               </li>
@@ -88,7 +86,6 @@ export default function Header() {
           </ul>
         </nav>
 
-        {/* 검색 */}
         <form
           onSubmit={handleSearchSubmit}
           className="relative ml-8 mr-auto hidden md:block w-80"
@@ -107,13 +104,22 @@ export default function Header() {
           </div>
         </form>
 
-        {/* 유저 */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={toggleProfileDropdown}
-            className="cursor-pointer rounded-full bg-gray-200 p-1 hover:bg-gray-300 transition-colors"
+            className="cursor-pointer rounded-full p-1 transition-colors"
           >
-            <User className="h-6 w-6 text-gray-600" />
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="프로필"
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-200">
+                <User className="h-6 w-6 text-gray-600" />
+              </div>
+            )}
           </button>
 
           {isProfileDropdownOpen && (

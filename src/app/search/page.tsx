@@ -34,58 +34,101 @@ export default function Page() {
   const searchParams = useSearchParams();
   const keyword = searchParams.get("keyword") || "";
   const [videos, setVideos] = useState<YoutubeVideoItem[]>([]);
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const observerRef = useRef<HTMLDivElement | null>(null);
   const viewedIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    console.log("[SearchPage] URL keyword =", keyword);
     if (!keyword.trim()) return;
 
-    const fetchYoutubeData = async () => {
-      try {
-        const res = await api.get("/api/youtube/video/list", {
-          headers: {
-            Authorization: `Bearer ${tokenManager.getToken()}`, 
-          },
-          params: { keyword },
-        });
-        setVideos(res.data.data.items);
-      } catch (err) {
-        console.error("유튜브 API 호출 실패", err);
-      }
-    };
-
+    setVideos([]);
+    setNextPageToken(null);
     fetchYoutubeData();
   }, [keyword]);
+
+  const fetchYoutubeData = async () => {
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const res = await api.get("/api/youtube/video/list", {
+        headers: {
+          Authorization: `Bearer ${tokenManager.getToken()}`,
+        },
+        params: {
+          keyword,
+          pageToken: nextPageToken ?? "",
+        },
+      });
+
+      const { items, nextPageToken: newToken } = res.data.data;
+
+      const uniqueItems = items.filter(
+        (item: YoutubeVideoItem) => {
+          const id = item.id.videoId || item.id.playlistId;
+          if (!id || viewedIdsRef.current.has(id)) return false;
+          viewedIdsRef.current.add(id);
+          return true;
+        }
+      );
+
+      setVideos((prev) => [...prev, ...uniqueItems]);
+      setNextPageToken(newToken || null);
+    } catch (err) {
+      console.error("유튜브 API 호출 실패", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && nextPageToken && !loading) {
+          fetchYoutubeData();
+        }
+      },
+      {
+        threshold: 1,
+      }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [nextPageToken, loading]);
 
   const handleVideoClick = async (
     video: YoutubeVideoItem,
     e?: React.MouseEvent
   ) => {
-    if (e) e.preventDefault(); 
+    if (e) e.preventDefault();
 
     const videoId = video.id.videoId || "";
     if (!videoId) return;
 
-    if (!viewedIdsRef.current.has(videoId)) {
-      try {
-        await api.post(
-          "/api/view/reg/hist",
-          {
-            videoId,
-            kind: video.id.kind || "",
-            playListId: video.id.playlistId || "",
+    try {
+      await api.post(
+        "/api/view/reg/hist",
+        {
+          videoId,
+          kind: video.id.kind || "",
+          playListId: video.id.playlistId || "",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${tokenManager.getToken()}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${tokenManager.getToken()}`, 
-            },
-          }
-        );
-        viewedIdsRef.current.add(videoId);
-        console.log(" 시청 기록 저장 완료");
-      } catch (err) {
-        console.error("시청 기록 등록 실패", err);
-      }
+        }
+      );
+      console.log("시청 기록 저장 완료");
+    } catch (err) {
+      console.error("시청 기록 등록 실패", err);
     }
   };
 
@@ -129,6 +172,9 @@ export default function Page() {
           ) : (
             <p className="text-gray-500">검색 결과가 없습니다.</p>
           )}
+
+          <div ref={observerRef} className="h-10" />
+          {loading && <p className="text-center text-gray-400">로딩 중...</p>}
         </div>
 
         <div className="w-full md:w-[20%] p-4 flex-shrink-0 relative">

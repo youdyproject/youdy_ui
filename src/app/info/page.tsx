@@ -2,11 +2,12 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import Link from "next/link";
+import { useProfile } from "@/lib/profileContext";
 
 export default function Page() {
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { profileImage, setProfileImage } = useProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,7 +23,7 @@ export default function Page() {
 
   return (
     <>
-    <Header/>
+      <Header />
       <div className="relative flex flex-col items-center justify-between min-h-screen px-4 py-4">
         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl my-8 pb-12">
           <p className="text-xs tracking-tight text-left w-full mb-4 pb-4 border-b">
@@ -43,7 +44,8 @@ export default function Page() {
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="mt-2 text-xs text-blue-500 hover:underline">
+                className="mt-2 text-xs text-blue-500 hover:underline"
+              >
                 프로필 사진 변경
               </button>
 
@@ -67,7 +69,8 @@ export default function Page() {
 
           <Link
             href="/auth/reset-password"
-            className="w-full text-xs text-left text-blue-500 hover:underline">
+            className="w-full text-xs text-left text-blue-500 hover:underline"
+          >
             비밀번호 변경
           </Link>
         </div>
