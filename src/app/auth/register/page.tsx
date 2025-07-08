@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { CheckCircle, Eye, EyeOff } from "lucide-react"
-import AuthTimer from "./authTimer"
-import api from "@/utils/api";
+import AuthTimer from "../../../components/timer/AuthTimer"
+import { api } from "@/utils/api";
 import Link from "next/link"
 
 export default function Page() {

@@ -128,4 +128,4 @@ async function refreshToken(): Promise<string | null> {
   return null;
 }
 
-export default api;
+export default authApi;

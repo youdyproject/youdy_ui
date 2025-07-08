@@ -2,11 +2,50 @@
 
 import { useState, useEffect } from "react"
 import { Play, Pause } from "lucide-react"
+import Timer from "../timer/StudyTimer";
+import api from "@/utils/api";
 
 export default function StudyTimeline() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isStudyMode, setIsStudyMode] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+
+  const [isRunning, setIsRunning] = useState(false);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [endTime, setEndTime] = useState<Date | null>(null);
+
+
+  const handleToggleTimer = () => {
+
+    setIsPlaying(!isPlaying)
+    
+    if (!isRunning) {
+      // 타이머 시작
+      const now = new Date();
+      setStartTime(now);
+      setEndTime(null);
+      setIsRunning(true);
+
+      debugger;
+      
+      const response = api.post("/api/study/start/timetable", {mode : "S"})
+
+    } else {
+      // 타이머 멈춤
+      const now = new Date();
+      setEndTime(now);
+      setIsRunning(false);
+
+      api.post("/api/study/stop/timetable");
+
+      if (startTime) {
+        const duration = (now.getTime() - startTime.getTime()) / 1000;
+        console.log("시작시간:", startTime.toISOString());
+        console.log("종료시간:", now.toISOString());
+        console.log("총 경과 시간(초):", duration);
+      }
+    }
+  }
 
   // 시간 슬롯 생성 (6-12, 1-5, 6-12, 1-5)
   const timeSlots = [
@@ -86,15 +125,11 @@ export default function StudyTimeline() {
         {/* 컨트롤 영역 */}
         <div className="flex justify-between items-center p-2 mb-2">
           <div className="flex items-center gap-2">
-            <button className="text-gray-600 hover:text-gray-800 p-1" onClick={togglePlay}>
+            <button className="text-gray-600 hover:text-gray-800 p-1" onClick={handleToggleTimer}>
               {isPlaying ? <Pause className="text-yellow-400" size={20} /> : <Play size={20} />}
             </button>
             <div className="text-sm font-medium">
-              {currentTime.toLocaleTimeString("ko-KR", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              })}
+              <Timer isRunning={isRunning} />
             </div>
           </div>
 
