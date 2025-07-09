@@ -3,10 +3,16 @@
 import { useState, ChangeEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { api } from "@/utils/api";
+import { tokenManager } from "@/lib/tokenManager";
+import { logout } from "@/lib/logout";
 
 export default function Page() {
+  const router = useRouter();
+
   const [prevPassword, setPrevPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordChk, setNewPasswordChk] = useState("");
@@ -25,7 +31,9 @@ export default function Page() {
   };
 
   const validate = () => {
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&^~()\-_=+])[A-Za-z\d@$!%*#?&^~()\-_=+]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&^~()\-_=+])[A-Za-z\d@$!%*#?&^~()\-_=+]{8,}$/;
+
     if (!prevPassword) {
       setErrorMsg("현재 비밀번호를 입력해주세요.");
       return false;
@@ -50,6 +58,49 @@ export default function Page() {
 
     setErrorMsg("");
     return true;
+  };
+
+  const handleChangePassword = async () => {
+    if (!validate()) return;
+
+    const token = tokenManager.getToken();
+    if (!token) {
+      setErrorMsg("인증 토큰이 없습니다. 다시 로그인해주세요.");
+      return;
+    }
+
+    try {
+      /*
+      const res = await api.put(
+        "/api/member/updt/password",
+        {
+          prevPassword,
+          password: newPassword,
+          passwordChk: newPasswordChk,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.status === 200 && res.data.success) {
+        alert("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
+        logout();
+        router.push("/auth/login");
+      }
+      */
+
+    } catch (error: any) {
+      console.error("비밀번호 변경 실패:", error.response?.data || error.message);
+
+      if (error.response?.status === 400) {
+        setErrorMsg("현재 비밀번호가 일치하지 않습니다.");
+      } else {
+        setErrorMsg("비밀번호 변경 중 오류가 발생했습니다.");
+      }
+    }
   };
 
   return (
@@ -98,7 +149,7 @@ export default function Page() {
           <p className="text-red-500 self-start text-sm">{errorMsg}</p>
         )}
 
-        <Button size="login" className="!mt-2" onClick={validate}>
+        <Button size="login" className="!mt-2" onClick={handleChangePassword}>
           비밀번호 변경
         </Button>
       </div>

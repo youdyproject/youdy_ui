@@ -6,6 +6,7 @@ import { tokenManager } from "@/lib/tokenManager";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StudyTimeline from "@/components/layout/StudyTimeline";
+import StudyCalendar from "@/components/calendar/StudyCalendar";
 
 interface YoutubeVideoItem {
   id: string;
@@ -48,7 +49,7 @@ export default function Page() {
         <div className="w-full md:w-[80%] p-6 space-y-12 max-w-[1280px] mx-auto">
           {lastVideo && (
             <section>
-              <h2 className="text-sm mb-4 ">마지막 시청 영상</h2>
+              <h2 className="text-sm mb-4">마지막 시청 영상</h2>
               <div className="flex flex-col md:flex-row gap-8">
                 <img
                   src={lastVideo.snippet.thumbnails.high.url}
@@ -62,21 +63,18 @@ export default function Page() {
                   <p className="text-base text-gray-600">
                     {lastVideo.snippet.channelTitle}
                   </p>
-                  <p className="text-lg text-gray-700 mt-4">
-                    00:00 / 00:00
-                  </p>
+                  <p className="text-lg text-gray-700 mt-4">00:00 / 00:00</p>
                 </div>
               </div>
             </section>
           )}
 
           <section>
-           
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-1 h-96 bg-gray-50 rounded-md flex items-center justify-center text-gray-400">
-                달력
+              <div className="flex-[1.2] h-[400px] bg-gray-50 rounded-md flex">
+                <StudyCalendar />
               </div>
-              <div className="flex-1 h-96 bg-gray-50 rounded-md flex items-center justify-center text-gray-400">
+              <div className="flex-[0.8] h-[400px] bg-gray-50 rounded-md flex items-center justify-center text-gray-400">
                 그래프
               </div>
             </div>
@@ -87,7 +85,6 @@ export default function Page() {
           <StudyTimeline />
         </div>
       </div>
-
       <Footer />
     </div>
   );
