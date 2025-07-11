@@ -196,7 +196,7 @@ export default function Page() {
             }
 
         } catch (error: any) {
-            console.error("이메일 인증 에러:", error.response?.data || error.message)
+            console.error("가입에러:", error.response?.data || error.message)
             setErrMsg("가입에 실패했습니다.");
         }
 

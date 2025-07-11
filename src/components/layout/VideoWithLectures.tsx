@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { SkipBack, SkipForward, Play, Pause } from "lucide-react"
 import YouTube, { YouTubeProps } from 'react-youtube';
 import api from "@/utils/api";
 
@@ -177,7 +176,6 @@ export default function VideoWithLectures() {
       {/* 왼쪽 영상 영역 */}
       <div className="w-full md:w-[73%] p-4 flex flex-col">
       <div className="relative aspect-video bg-black mb-4 rounded-lg overflow-hidden">
-        {/* 실제 사용시에는 주석을 풀고 사용하세요 */}
         <YouTube
           videoId={videoData.videoId}
           opts={opts}
