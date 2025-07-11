@@ -26,8 +26,6 @@ authApi.interceptors.request.use(async (config) => {
   if (token) {
     console.log('토큰 검증을 시작합니다. 토큰:', token ? '존재함' : '없음');
 
-    debugger;
-
     // 매번 토큰 검증 API 호출
     const isValid = await validateToken(token);
 
@@ -86,8 +84,6 @@ authApi.interceptors.response.use(
 /* 토큰 검증 */
 async function validateToken(token: string): Promise<boolean> {
 
-  debugger;
-
   if (!token) return false;
 
   try {
@@ -96,8 +92,6 @@ async function validateToken(token: string): Promise<boolean> {
         'Authorization': `Bearer ${token}`
       }
     });
-
-    debugger;
 
     return response.status === 200;
   } catch (error) {
@@ -111,8 +105,6 @@ async function refreshToken(): Promise<string | null> {
   try {
     console.log('토큰 갱신 요청');
     const response = await api.get('/api/auth/token/refresh');
-
-    debugger;
 
     if (response.status === 200) {
       const data = response.data;
