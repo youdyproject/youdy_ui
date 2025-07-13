@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import YouTube, { YouTubeProps } from 'react-youtube';
+import { formatSubscriberCount, formatViewCount } from "@/lib/formatter"
 import api from "@/utils/api";
 
 // 강의 아이템 타입 정의
@@ -21,8 +22,11 @@ interface VideoData {
   channelId: string;      // 채널id
   channelTitle: string;   // 채널명
   description: string;    // 영상설명
-  thumbnails: string;     // 채널아이콘 (xxxx임시 이거말고 다른 url받아와야함 영상썸네일임 이건)
-  viewCount: string;      // 조회수
+  viewCount: number;      // 조회수
+  channel: {
+    thumbnails: string;
+    subscriberCount: number;
+  }
 }
 
 export default function VideoWithLectures() {
@@ -34,10 +38,15 @@ export default function VideoWithLectures() {
     channelId: '',
     channelTitle: '',
     description: '',
-    thumbnails: '',
-    viewCount: '',
+    viewCount: 0,
+    channel: {
+      thumbnails: '',
+      subscriberCount: 0
+    }
   });
   const [isApiChecked, setIsApiChecked] = useState<boolean>(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
+
 
   // 강의 데이터
   const [lectures] = useState<LectureItem[]>([
@@ -148,8 +157,6 @@ export default function VideoWithLectures() {
   /* 페이지 첫 랜더링 시 시청기록 조회 실행 */
   useEffect(() => {
 
-    console.log(videoData);
-
     const fetchData = async () => {
       try {
         const resp = await api.get("/api/view/hist/list?page=1");
@@ -165,6 +172,12 @@ export default function VideoWithLectures() {
         // 시청기록 있는경우 영상 데이터 세팅 밑 재생, 없는경우 검색 유도
         if (data) {
           const firstItem = data.contents[0];
+
+          // 채널 정보 조회를 위한 api호출
+          const resp = await api.get("/api/youtube/channel/info?channelId=" + firstItem.snippet.channelId);
+          const channelData = resp.data.data.items[0];
+
+          // 동영상 데이터 및 채널정보 세팅
           setVideoData({
             videoId: firstItem.id,
             kind: firstItem.kind,
@@ -172,8 +185,11 @@ export default function VideoWithLectures() {
             channelId: firstItem.snippet.channelId,
             channelTitle: firstItem.snippet.channelTitle,
             description: firstItem.snippet.description,
-            thumbnails: firstItem.snippet.thumbnails.medium.url,
-            viewCount: firstItem.snippet.statics.viewCount
+            viewCount: firstItem.snippet.statics.viewCount,
+            channel: {
+              thumbnails: channelData.snippet.thumbnails.medium.url,
+              subscriberCount: channelData.statistics.subscriberCount
+            }
           });
 
         }
@@ -182,11 +198,15 @@ export default function VideoWithLectures() {
         console.error("API 요청 실패:", error);
       }
     };
+
     fetchData();
+
   }, []);
 
-
-  console.log("videodata:", videoData);
+  /* description제어 */
+  const toggleDescription = () => {
+    setIsDescriptionExpanded(!isDescriptionExpanded)
+  }
 
   return (
     <div className="flex flex-col md:flex-row">
@@ -207,18 +227,39 @@ export default function VideoWithLectures() {
             <div>
               <h1 className="text-lg font-bold">{videoData.title}</h1>
               <div className="flex items-center mt-2 mb-4">
-                <div className="w-8 h-8 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-white">
-                    <img src={videoData.thumbnails} className="w-10 h-10 aspect-square rounded-full object-cover"></img>
-                  </div>
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-white">
+                  <img src={videoData.channel.thumbnails} className="w-full h-full object-cover"></img>
                 </div>
-                <div>
+                <div className="ml-2">
                   <p className="text-sm font-bold">{videoData.channelTitle}</p>
-                  <p className="text-xs text-gray-500">구독자 12.5만명</p>
+                  <p className="text-xs text-gray-700">구독자 {formatSubscriberCount(videoData.channel.subscriberCount)}명</p>
                 </div>
               </div>
-              <div className="mt-4 p-4 bg-gray-100 rounded-lg min-h-[150px]">
-                <p className="text-sm">{videoData.description}</p>
+              {/* 설명 섹션 - 접기/펼치기 기능 */}
+              <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                <div
+                  className={`text-xs leading-relaxed transition-all duration-300 overflow-hidden ${isDescriptionExpanded ? "max-h-none" : "max-h-20"
+                    }`}
+                >
+                  <p className="font-bold">조회수 {formatViewCount(videoData.viewCount)}</p>
+                  <p className="whitespace-pre-line">{videoData.description}</p>
+                </div>
+
+                {/* 더보기/접기 버튼 */}
+                <button
+                  onClick={toggleDescription}
+                  className="flex items-center cursor-pointer font-bold gap-1 mt-3 text-xs hover:text-gray-700 transition-colors"
+                >
+                  {isDescriptionExpanded ? (
+                    <>
+                      <span>간략히</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>더보기</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
