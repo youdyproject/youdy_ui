@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { api } from "@/utils/api";
+import { authApi } from "@/utils/api"; 
 import { tokenManager } from "@/lib/tokenManager";
 import { logout } from "@/lib/logout";
 
@@ -18,18 +18,18 @@ export default function Page() {
   const [newPasswordChk, setNewPasswordChk] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
+  // 입력값 업데이트 핸들러
   const handlePrevPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPrevPassword(e.target.value);
   };
-
   const handleNewPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setNewPassword(e.target.value);
   };
-
   const handleNewPasswordChkChange = (e: ChangeEvent<HTMLInputElement>) => {
     setNewPasswordChk(e.target.value);
   };
 
+  // validation 함수
   const validate = () => {
     const passwordRegex =
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&^~()\-_=+])[A-Za-z\d@$!%*#?&^~()\-_=+]{8,}$/;
@@ -60,41 +60,35 @@ export default function Page() {
     return true;
   };
 
+  // 유효성 검사
   const handleChangePassword = async () => {
     if (!validate()) return;
 
+    //토큰 확인
     const token = tokenManager.getToken();
     if (!token) {
       setErrorMsg("인증 토큰이 없습니다. 다시 로그인해주세요.");
       return;
     }
-
+    
+    // 비밀번호 변경 요청
     try {
-      /*
-      const res = await api.put(
-        "/api/member/updt/password",
-        {
-          prevPassword,
-          password: newPassword,
-          passwordChk: newPasswordChk,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await authApi.put("/api/member/updt/password", {
+        prevPassword,
+        password: newPassword,
+        passwordChk: newPasswordChk,
+      });
 
+      //  정상 처리
       if (res.status === 200 && res.data.success) {
         alert("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
         logout();
-        router.push("/auth/login");
+        router.push("/auth/login"); 
       }
-      */
-
     } catch (error: any) {
       console.error("비밀번호 변경 실패:", error.response?.data || error.message);
 
+      //  에러 메시지 저장
       if (error.response?.status === 400) {
         setErrorMsg("현재 비밀번호가 일치하지 않습니다.");
       } else {
@@ -118,6 +112,7 @@ export default function Page() {
           <span className="text-2xl font-semibold">Youdy</span>
         </Link>
 
+        {/* 비밀번호 변경 입력 필드 */}
         <Input
           name="prevPassword"
           type="password"
@@ -145,6 +140,7 @@ export default function Page() {
           onChange={handleNewPasswordChkChange}
         />
 
+        {/* 에러 메시지 출력 */}
         {errorMsg && (
           <p className="text-red-500 self-start text-sm">{errorMsg}</p>
         )}
