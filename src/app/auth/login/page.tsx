@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { useState, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { tokenManager } from '@/lib/tokenManager';
-import { api } from "@/utils/api";
+import api from "@/utils/api";
 import Image from "next/image"
 import Link from "next/link";
 
@@ -65,10 +65,6 @@ export default function Page() {
             const response = await api.post("/api/auth/login", {
                 email: loginData.email,
                 password: loginData.password,
-            }, {
-                headers: {
-                    FrontToken: "youdyfronttoken"
-                }
             }
 
             );
@@ -123,6 +119,11 @@ export default function Page() {
                             [e.target.name]: e.target.value,
                         }))
                     }
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            handleLogin();
+                        }
+                    }}
                 />
                 {loginErrMsg &&
                     <p className="text-red-500 self-start text-sm">{loginErrMsg}</p>
