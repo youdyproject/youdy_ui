@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { useState, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { tokenManager } from '@/lib/tokenManager';
-import api from "@/utils/api";
+import { api } from "@/utils/api";
 import Image from "next/image"
 import Link from "next/link";
 
