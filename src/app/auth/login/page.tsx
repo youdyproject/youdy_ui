@@ -18,6 +18,7 @@ export default function Page() {
         password: "",
     })
     const [loginErrMsg, setLoginErrMsg] = useState<string>("");
+    const [isCapsLockOn, setIsCapsLockOn] = useState<boolean>(false);
 
     /* validation 함수 */
     const validateChk = () => {
@@ -60,8 +61,6 @@ export default function Page() {
         if (!validateChk()) return;
 
         try {
-            console.log("로그인 시도:", loginData);
-
             const response = await api.post("/api/auth/login", {
                 email: loginData.email,
                 password: loginData.password,
@@ -120,11 +119,13 @@ export default function Page() {
                         }))
                     }
                     onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            handleLogin();
-                        }
+                        if (e.key === "Enter") handleLogin();   // enter키 감지
+                        setIsCapsLockOn(e.getModifierState("CapsLock"));    // capslock감지
                     }}
                 />
+                {isCapsLockOn && (
+                    <p className="text-xs font-bold self-start text-red-500 mt-1">⚠️Caps Lock이 켜져 있습니다</p>
+                )}
                 {loginErrMsg &&
                     <p className="text-red-500 self-start text-sm">{loginErrMsg}</p>
                 }
