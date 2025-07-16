@@ -13,12 +13,35 @@ export default function StudyTimeline() {
   const [isRunning, setIsRunning] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [endTime, setEndTime] = useState<Date | null>(null);
+  const [studyTime, setStudyTime] = useState<string>("");
 
 
+  /* 당일 학습시간조회 및 초기값 00:00:00 세팅 */
+  useEffect(() => {
+
+    const fetchData = async () => {
+      try {
+        const resp = await api.get("/api/study/timetable/list");
+        console.log("타임테이블", resp);
+        setStudyTime(resp.data.data.studyTime);
+      } catch (error) {
+        console.error("API 요청 실패:", error);
+      }
+    }
+
+    fetchData();
+
+  }, []);
+
+  console.log("스터디타임", studyTime);
+
+
+
+  /* 타이머 시작 시 저장 */
   const handleToggleTimer = () => {
 
     setIsPlaying(!isPlaying)
-    
+
     if (!isRunning) {
       // 타이머 시작
       const now = new Date();
@@ -26,9 +49,7 @@ export default function StudyTimeline() {
       setEndTime(null);
       setIsRunning(true);
 
-      debugger;
-      
-      const response = api.post("/api/study/start/timetable", {mode : "S"})
+      const response = api.post("/api/study/start/timetable", { mode: "S" })
 
     } else {
       // 타이머 멈춤
@@ -87,15 +108,6 @@ export default function StudyTimeline() {
     return { rowIndex, colIndex }
   }
 
-  // 플레이/일시정지 토글
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying)
-  }
-
-  const toggleStudyMode = () => {
-    setIsStudyMode(!isStudyMode)
-  }
-
   // 실시간 시간 업데이트
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
@@ -129,7 +141,9 @@ export default function StudyTimeline() {
               {isPlaying ? <Pause className="text-yellow-400" size={20} /> : <Play size={20} />}
             </button>
             <div className="text-sm font-medium">
-              <Timer isRunning={isRunning} />
+              {studyTime && (
+                <Timer isRunning={isRunning} studyTime={studyTime} />
+              )}
             </div>
           </div>
 
@@ -138,13 +152,13 @@ export default function StudyTimeline() {
             className="relative w-16 h-8 bg-gray-400 rounded-full cursor-pointer transition-colors duration-200"
             onClick={toggleStudyMode}
           > */}
-            {/* STUDY 텍스트 */}
-            {/* <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs font-medium text-white">
+          {/* STUDY 텍스트 */}
+          {/* <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs font-medium text-white">
               STUDY
             </span> */}
 
-            {/* 흰색 원형 버튼 */}
-            {/* <div
+          {/* 흰색 원형 버튼 */}
+          {/* <div
               className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-sm transition-all duration-200 ${
                 isStudyMode ? "left-1" : "left-9"
               }`}
