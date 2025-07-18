@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { authApi } from "@/utils/api"; 
-import { tokenManager } from "@/lib/tokenManager";
 import { logout } from "@/lib/logout";
 
 export default function Page() {
@@ -63,14 +62,7 @@ export default function Page() {
   // 유효성 검사
   const handleChangePassword = async () => {
     if (!validate()) return;
-
-    //토큰 확인
-    const token = tokenManager.getToken();
-    if (!token) {
-      setErrorMsg("인증 토큰이 없습니다. 다시 로그인해주세요.");
-      return;
-    }
-    
+   
     // 비밀번호 변경 요청
     try {
       const res = await authApi.put("/api/member/updt/password", {
