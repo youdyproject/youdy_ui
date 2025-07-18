@@ -15,7 +15,7 @@ export default function Page() {
   // 이미지 blob을 url 데이터로 변환
   const fetchImageBlobUrl = async (fileSn: string) => {
     try {
-      const response = await authApi.get(`/api/file/imgView/${fileSn}`, {
+      const response = await authApi.get(`/api/file/imgView?fileSn=${fileSn}`, {
         responseType: "blob",
       });
       const blob = response.data;

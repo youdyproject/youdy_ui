@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import {
   createContext,
@@ -7,7 +7,7 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { usePathname } from "next/navigation"; 
+import { usePathname } from "next/navigation";
 import { authApi } from "@/utils/api";
 import { tokenManager } from "@/lib/tokenManager";
 
@@ -36,25 +36,24 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     const shouldSkip = skipRoutes.some((route) => pathname.startsWith(route));
 
     if (!token || shouldSkip) {
-      console.log("🔒 [ProfileContext] 스킵됨 - 토큰 없음 또는 auth 관련 경로");
+      console.log("[ProfileContext] 스킵됨 - 토큰 없음 또는 auth 관련 경로");
       return;
     }
 
-    /* CORS 문제로 임시 주석 처리
     const loadProfile = async () => {
       try {
         // 회원 정보에서 프로필 이미지 fileSn 가져오기
         const res = await authApi.get("/api/member/dtl");
         const fileSn = res.data?.data?.profileFileSn;
 
-        // 이미지 blob 요청
+        // 이미지 blob 요청 (쿼리 파라미터 방식으로 수정)
         if (fileSn) {
-          const blobRes = await authApi.get(`/api/file/imgView/${fileSn}`, {
+          const blobRes = await authApi.get(`/api/file/imgView?fileSn=${fileSn}`, {
             responseType: "blob",
           });
           const imageUrl = URL.createObjectURL(blobRes.data); // blob → 임시 URL 변환
           console.log("[ProfileContext] 프로필 이미지 로드 완료:", imageUrl);
-          setProfileImage(imageUrl); 
+          setProfileImage(imageUrl);
         } else {
           setProfileImage(null);
         }
@@ -64,7 +63,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     };
 
     loadProfile();
-    */
 
     // 페이지 전환/언마운트 시 blob URL 정리
     return () => {
