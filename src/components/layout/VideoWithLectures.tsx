@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import YouTube, { YouTubeProps } from 'react-youtube';
-import { formatSubscriberCount, formatViewCount } from "@/lib/formatter"
+import { formatSubscriberCount, formatViewCount, formatRelativeTime } from "@/lib/formatter"
 import api from "@/utils/api";
 
 // 강의 아이템 타입 정의
@@ -22,6 +22,7 @@ interface VideoData {
   channelId: string;      // 채널id
   channelTitle: string;   // 채널명
   description: string;    // 영상설명
+  publishedAt: string;
   viewCount: number;      // 조회수
   channel: {
     thumbnails: string;
@@ -38,6 +39,7 @@ export default function VideoWithLectures() {
     channelId: '',
     channelTitle: '',
     description: '',
+    publishedAt: '',
     viewCount: 0,
     channel: {
       thumbnails: '',
@@ -118,16 +120,16 @@ export default function VideoWithLectures() {
 
   // 플레이어 준비 완료 시
   const onReady = (event: any) => {
-    console.log('YouTube 플레이어 준비 완료');
+    // console.log('YouTube 플레이어 준비 완료');
     // 플레이어 정보 가져오기
     const videoData = event.target.getVideoData();
-    console.log('영상 제목:', videoData.title);
-    console.log('영상 길이:', event.target.getDuration(), '초');
+    // console.log('영상 제목:', videoData.title);
+    // console.log('영상 길이:', event.target.getDuration(), '초');
   };
 
   // 영상 상태 변경 시
   const onStateChange = (event: any) => {
-    console.log('영상 상태 변경:', event.data);
+    // console.log('영상 상태 변경:', event.data);
 
     switch (event.data) {
       case -1:
@@ -159,7 +161,7 @@ export default function VideoWithLectures() {
 
     const fetchData = async () => {
       try {
-        const resp = await api.get("/api/view/hist/list?page=1");
+        const resp = await api.get("/api/view/recent/hist");
         const data = resp.data.data;
 
         // 화면 제어를 위한 api조회 여부 체크
@@ -167,25 +169,25 @@ export default function VideoWithLectures() {
           setIsApiChecked(true);
         }
 
-        console.log(resp);
+        console.log("마지막hist데이터", resp);
 
         // 시청기록 있는경우 영상 데이터 세팅 밑 재생, 없는경우 검색 유도
         if (data) {
-          const firstItem = data.contents[0];
 
           // 채널 정보 조회를 위한 api호출
-          const resp = await api.get("/api/youtube/channel/info?channelId=" + firstItem.snippet.channelId);
+          const resp = await api.get("/api/youtube/channel/info?channelId=" + data.snippet.channelId);
           const channelData = resp.data.data.items[0];
 
           // 동영상 데이터 및 채널정보 세팅
           setVideoData({
-            videoId: firstItem.id,
-            kind: firstItem.kind,
-            title: firstItem.snippet.title,
-            channelId: firstItem.snippet.channelId,
-            channelTitle: firstItem.snippet.channelTitle,
-            description: firstItem.snippet.description,
-            viewCount: firstItem.snippet.statics.viewCount,
+            videoId: data.id,
+            kind: data.kind,
+            title: data.snippet.title,
+            channelId: data.snippet.channelId,
+            channelTitle: data.snippet.channelTitle,
+            description: data.snippet.description,
+            publishedAt: data.snippet.publishedAt,
+            viewCount: data.snippet.statics.viewCount,
             channel: {
               thumbnails: channelData.snippet.thumbnails.medium.url,
               subscriberCount: channelData.statistics.subscriberCount
@@ -241,7 +243,7 @@ export default function VideoWithLectures() {
                   className={`text-xs leading-relaxed transition-all duration-300 overflow-hidden ${isDescriptionExpanded ? "max-h-none" : "max-h-20"
                     }`}
                 >
-                  <p className="font-bold">조회수 {formatViewCount(videoData.viewCount)}</p>
+                  <p className="font-bold">조회수 {formatViewCount(videoData.viewCount)} {formatRelativeTime(new Date(videoData.publishedAt))}</p>
                   <p className="whitespace-pre-line">{videoData.description}</p>
                 </div>
 

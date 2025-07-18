@@ -33,10 +33,6 @@ export default function StudyTimeline() {
 
   }, []);
 
-  console.log("스터디타임", studyTime);
-
-
-
   /* 타이머 시작 시 저장 */
   const handleToggleTimer = () => {
 
