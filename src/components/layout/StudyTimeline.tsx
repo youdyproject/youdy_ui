@@ -5,6 +5,16 @@ import { Play, Pause } from "lucide-react"
 import Timer from "../timer/StudyTimer";
 import api from "@/utils/api";
 
+// 타임테이블
+interface timeTable {
+  beginTm: string;          // 학습시작시간
+  endTm: string;            // 학습종료시간
+  durationMinutes: number;  // 학습시간(분)
+  durationSecond: number;   // 학습시간(초)
+  mode: string;             // 학습모드
+  timetableSn: number;      // 타임테이블 순번
+}
+
 export default function StudyTimeline() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isStudyMode, setIsStudyMode] = useState(false)
@@ -14,6 +24,7 @@ export default function StudyTimeline() {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [studyTime, setStudyTime] = useState<string>("");
+  const [timeTable, setTimeTable] = useState<timeTable[]>([]);
 
 
   /* 당일 학습시간조회 및 초기값 00:00:00 세팅 */
@@ -24,6 +35,7 @@ export default function StudyTimeline() {
         const resp = await api.get("/api/study/timetable/list");
         console.log("타임테이블", resp);
         setStudyTime(resp.data.data.studyTime);
+        setTimeTable(resp.data.data.studyTimeTableItemList);
       } catch (error) {
         console.error("API 요청 실패:", error);
       }
