@@ -81,7 +81,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 export const useProfile = () => {
   const context = useContext(ProfileContext);
   if (!context) {
-    throw new Error("useProfile must be used within a ProfileProvider");
+    throw new Error("useProfile은 ProfileProvider 내에서 사용해야 합니다.");
   }
   return context;
 };
