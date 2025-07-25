@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StudyTimeline from "@/components/layout/StudyTimeline";
 import TopButton from "@/components/ui/TopButton";
 import { MoreVertical } from "lucide-react";
-import api from "@/utils/api";
+import authApi from "@/utils/api";
+
 
 interface HistoryVideoItem {
   videoId: string;
@@ -15,28 +17,28 @@ interface HistoryVideoItem {
   channelTitle: string;
   thumbnail: string;
   regDt: string;
+  viewHistSn?: string;
 }
 
-// 날짜별 그룹 구조 정의
 interface HistoryGroup {
   date: string;
   videos: HistoryVideoItem[];
 }
-// 상태 관리
+
 export default function HistoryPage() {
   const [history, setHistory] = useState<HistoryGroup[]>([]);
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null); // 점 3개 메뉴용
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [page, setPage] = useState(0); 
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(true); 
   const [loading, setLoading] = useState(false); 
-  const observerRef = useRef<HTMLDivElement | null>(null); // 무한 스크롤 감지 요소
+  const observerRef = useRef<HTMLDivElement | null>(null); 
+  const router = useRouter();
 
-  // 페이지 변경될 때마다 fetchHistory 호출
   useEffect(() => {
     fetchHistory(page);
   }, [page]);
 
-  // 무한 스크롤 설정
+  // 무한 스크롤
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -49,31 +51,47 @@ export default function HistoryPage() {
 
     const current = observerRef.current;
     if (current) observer.observe(current);
+
     return () => {
       if (current) observer.unobserve(current);
     };
   }, [hasMore, loading]);
 
-  // 시청 기록 불러오기
+  // 시청기록 조회
   const fetchHistory = async (pageNum: number) => {
+    if (!hasMore) return;
     setLoading(true);
+
     try {
-      const res = await api.get("/api/view/hist/list", {
+      const res = await authApi.get("/api/view/hist/list", {
         params: { page: pageNum },
       });
+
+      if (res.status !== 200 || !res.data?.data) {
+        console.warn("시청기록 응답이 비정상입니다.", res);
+        setHasMore(false);
+        return;
+      }
 
       const contents = res.data?.data?.contents ?? [];
       const isLast = res.data?.data?.last ?? true;
 
-      // API 응답을 화면에 필요한 형태로 가공
+      if (contents.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      // API 응답 데이터 -> UI 데이터 구조로 변환
       const mapped: HistoryVideoItem[] = contents.map((item: any) => ({
         videoId: item.id,
         title: item.snippet?.title ?? "영상 제목 없음",
         description: item.snippet?.description ?? "",
         channelTitle: item.snippet?.channelTitle ?? "채널명 없음",
-        thumbnail: item.snippet?.thumbnails?.medium?.url ??
+        thumbnail:
+          item.snippet?.thumbnails?.medium?.url ??
           `https://img.youtube.com/vi/${item.id}/mqdefault.jpg`,
         regDt: item.accessInfo?.frstRegistDt ?? "",
+        viewHistSn: item.accessInfo?.viewHistSn ?? item.viewHistSn ?? "",
       }));
 
       // 날짜별 그룹화
@@ -91,19 +109,19 @@ export default function HistoryPage() {
         })
       );
 
-      // 이전 기록 + 새 기록 병합 및 중복 제거
+      // 기존 데이터 + 새 데이터 병합
       setHistory((prev) => {
         const mergedMap = new Map<string, HistoryVideoItem[]>();
 
-        // 기존 기록 추가
+        // 기존 데이터
         prev.forEach((g) => {
           mergedMap.set(g.date, [...(mergedMap.get(g.date) || []), ...g.videos]);
         });
 
-        // 새 기록 추가 + 기존에 같은 영상ID가 있으면 최신 기록으로 덮어쓰기
+        // 신규 데이터
         groupedArray.forEach((g) => {
           const existing = mergedMap.get(g.date) || [];
-          const existingMap = new Map(existing.map(v => [v.videoId, v]));
+          const existingMap = new Map(existing.map((v) => [v.videoId, v]));
 
           g.videos.forEach((v) => {
             const existingItem = existingMap.get(v.videoId);
@@ -115,18 +133,18 @@ export default function HistoryPage() {
           mergedMap.set(g.date, Array.from(existingMap.values()));
         });
 
+        // 날짜 기준 내림차순 정렬
         const merged = Array.from(mergedMap.entries()).map(([date, videos]) => ({
           date,
           videos,
         }));
-
-        // 날짜 기준 내림차순 정렬
         return merged.sort((a, b) => b.date.localeCompare(a.date));
       });
 
       setHasMore(!isLast);
     } catch (err) {
       console.error("시청기록 불러오기 실패", err);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
@@ -138,13 +156,46 @@ export default function HistoryPage() {
     setActiveMenuId(null);
   };
 
-  const handleDeleteHistory = (video: HistoryVideoItem) => {
-    console.log("시청 기록 삭제:", video.videoId);
-    setActiveMenuId(null);
+   // 시청기록 삭제
+  const handleDeleteHistory = async (
+    e: React.MouseEvent,
+    video: HistoryVideoItem
+  ) => {
+    e.stopPropagation();
+    try {
+      if (!video.viewHistSn) {
+        console.warn("삭제에 필요한 viewHistSn이 없습니다.", video);
+        return;
+      }
+
+      await authApi.delete("/api/view/del/hist", {
+        params: { viewHistSn: video.viewHistSn },
+      });
+
+      setHistory((prev) =>
+        prev
+          .map((group) => ({
+            ...group,
+            videos: group.videos.filter((v) => v.videoId !== video.videoId),
+          }))
+          .filter((group) => group.videos.length > 0)
+      );
+    } catch (err) {
+      console.error("시청 기록 삭제 실패", err);
+    } finally {
+      setActiveMenuId(null);
+    }
   };
 
   const toggleMenu = (videoId: string) => {
     setActiveMenuId((prev) => (prev === videoId ? null : videoId));
+  };
+
+  /**
+   * 영상 클릭 시 학습 페이지로 이동
+   */
+  const handleVideoClick = (videoId: string) => {
+    router.push("/learning");
   };
 
   return (
@@ -152,6 +203,7 @@ export default function HistoryPage() {
       <Header />
 
       <main className="flex flex-col md:flex-row flex-1">
+        {/* 왼쪽 시청 기록 리스트 */}
         <div className="w-full md:w-[80%] p-4 md:p-6 space-y-10">
           <h1 className="text-xl font-bold">시청 기록</h1>
 
@@ -163,7 +215,8 @@ export default function HistoryPage() {
                 {group.videos.map((video) => (
                   <div
                     key={video.videoId + video.regDt}
-                    className="flex gap-4 items-start border p-3 rounded relative"
+                    className="flex gap-4 items-start border p-3 rounded relative cursor-pointer"
+                    onClick={() => handleVideoClick(video.videoId)}
                   >
                     <img
                       src={video.thumbnail}
@@ -172,7 +225,7 @@ export default function HistoryPage() {
                       height={146}
                       className="rounded-lg w-[260px] h-[146px] object-cover"
                     />
-                    
+
                     <div className="flex flex-col justify-between flex-1">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-800">
@@ -187,9 +240,13 @@ export default function HistoryPage() {
                       </p>
                     </div>
 
+                    {/* 점 3개 메뉴 */}
                     <div className="relative">
                       <button
-                        onClick={() => toggleMenu(video.videoId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleMenu(video.videoId);
+                        }}
                         className="p-2 hover:bg-gray-100 rounded-full"
                       >
                         <MoreVertical className="w-5 h-5 text-gray-600" />
@@ -198,13 +255,16 @@ export default function HistoryPage() {
                       {activeMenuId === video.videoId && (
                         <div className="absolute right-0 mt-2 w-40 rounded-md bg-white shadow-lg border z-50">
                           <button
-                            onClick={() => handleAddToPlaylist(video)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToPlaylist(video);
+                            }}
                             className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           >
                             재생목록에 추가
                           </button>
                           <button
-                            onClick={() => handleDeleteHistory(video)}
+                            onClick={(e) => handleDeleteHistory(e, video)}
                             className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           >
                             시청 기록 삭제
@@ -224,6 +284,7 @@ export default function HistoryPage() {
           {loading && <p className="text-center text-gray-400">로딩 중...</p>}
         </div>
 
+        {/* 오른쪽 타임라인 */}
         <div className="w-full md:w-[20%] p-4 flex-shrink-0 relative">
           <div className="sticky top-[72px]">
             <StudyTimeline />

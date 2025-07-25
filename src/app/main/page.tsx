@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import authApi from "@/utils/api";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -23,10 +24,10 @@ interface YoutubeVideoItem {
 
 export default function Page() {
   const [lastVideo, setLastVideo] = useState<YoutubeVideoItem | null>(null);
+  const router = useRouter(); 
 
-  
+  // 최근 시청 영상 조회 후, 응답 데이터가 존재할 경우 상태에 저장
   useEffect(() => {
-    // 최근 시청 영상 조회 후, 응답 데이터가 존재할 경우 상태에 저장
     const fetchLastWatched = async () => {
       try {
         const res = await authApi.get("/api/view/recent/hist");
@@ -42,6 +43,11 @@ export default function Page() {
   // 썸네일 이미지 Url 존재 여부 확인 
   const hasThumbnail = !!lastVideo?.snippet?.thumbnails?.high?.url;
 
+  // 썸네일 클릭 시 학습 페이지로 이동
+  const handleThumbnailClick = () => {
+    router.push("/learning");
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
@@ -53,7 +59,10 @@ export default function Page() {
             <h2 className="text-sm mb-4">마지막 시청 영상</h2>
 
             {hasThumbnail ? (
-              <div className="flex flex-col md:flex-row gap-8">
+              <div 
+                className="flex flex-col md:flex-row gap-8 cursor-pointer"
+                onClick={handleThumbnailClick}
+              >
                 <img
                   src={lastVideo!.snippet.thumbnails.high.url}
                   alt={lastVideo!.snippet.title}
