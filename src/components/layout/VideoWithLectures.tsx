@@ -21,13 +21,16 @@ interface VideoData {
   title: string;          // 영상제목
   channelId: string;      // 채널id
   channelTitle: string;   // 채널명
-  description: string;    // 영상설명
-  publishedAt: string;
-  viewCount: number;      // 조회수
-  channel: {
-    thumbnails: string;
-    subscriberCount: number;
-  }
+  description?: string;    // 영상설명
+  thumbnails?: string;     // 썸네일
+  publishedAt?: string;
+  viewCount?: number;      // 조회수
+}
+
+// 채널데이터
+interface ChannelData {
+  thumbnails: string;
+  subscriberCount: number;
 }
 
 export default function VideoWithLectures() {
@@ -41,11 +44,19 @@ export default function VideoWithLectures() {
     description: '',
     publishedAt: '',
     viewCount: 0,
-    channel: {
-      thumbnails: '',
-      subscriberCount: 0
-    }
   });
+  const [playlistData, setPlaylistData] = useState<VideoData>({
+    videoId: '',
+    kind: '',
+    title: '',
+    channelId: '',
+    channelTitle: '',
+    thumbnails: '',
+  });
+  const [channelData, setChannelData] = useState<ChannelData>({
+    thumbnails: '',
+    subscriberCount: 0,
+  })
   const [isApiChecked, setIsApiChecked] = useState<boolean>(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
 
@@ -175,10 +186,10 @@ export default function VideoWithLectures() {
         if (data) {
 
           // 채널 정보 조회를 위한 api호출
-          const resp = await api.get("/api/youtube/channel/info?channelId=" + data.snippet.channelId);
-          const channelData = resp.data.data.items[0];
+          const channelResp = await api.get("/api/youtube/channel/info?channelId=" + data.snippet.channelId);
+          const channelData = channelResp.data.data.items[0];
 
-          // 동영상 데이터 및 채널정보 세팅
+          // 동영상 데이터 세팅
           setVideoData({
             videoId: data.id,
             kind: data.kind,
@@ -188,11 +199,26 @@ export default function VideoWithLectures() {
             description: data.snippet.description,
             publishedAt: data.snippet.publishedAt,
             viewCount: data.snippet.statics.viewCount,
-            channel: {
-              thumbnails: channelData.snippet.thumbnails.medium.url,
-              subscriberCount: channelData.statistics.subscriberCount
-            }
           });
+
+          // 채널정보 세팅
+          setChannelData({
+            thumbnails: channelData.snippet.thumbnails.medium.url,
+            subscriberCount: channelData.statistics.subscriberCount
+          })
+
+          // 재생목록 조회
+          if (data.playlistId) {
+            const playlistResp = await api.get("/api/youtube/play/list=" + data.playlistId);
+            setPlaylistData({
+              videoId: '',
+              kind: '',
+              title: '',
+              channelId: '',
+              channelTitle: '',
+              thumbnails: '',
+            })
+          }
 
         }
 
@@ -230,11 +256,11 @@ export default function VideoWithLectures() {
               <h1 className="text-lg font-bold">{videoData.title}</h1>
               <div className="flex items-center mt-2 mb-4">
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-white">
-                  <img src={videoData.channel.thumbnails} className="w-full h-full object-cover"></img>
+                  <img src={channelData.thumbnails} className="w-full h-full object-cover"></img>
                 </div>
                 <div className="ml-2">
                   <p className="text-sm font-bold">{videoData.channelTitle}</p>
-                  <p className="text-xs text-gray-700">구독자 {formatSubscriberCount(videoData.channel.subscriberCount)}명</p>
+                  <p className="text-xs text-gray-700">구독자 {formatSubscriberCount(channelData.subscriberCount)}명</p>
                 </div>
               </div>
               {/* 설명 섹션 - 접기/펼치기 기능 */}
@@ -243,7 +269,7 @@ export default function VideoWithLectures() {
                   className={`text-xs leading-relaxed transition-all duration-300 overflow-hidden ${isDescriptionExpanded ? "max-h-none" : "max-h-20"
                     }`}
                 >
-                  <p className="font-bold">조회수 {formatViewCount(videoData.viewCount)} {formatRelativeTime(new Date(videoData.publishedAt))}</p>
+                  <p className="font-bold">조회수 {formatViewCount(videoData.viewCount ?? 0)} {formatRelativeTime(new Date(videoData.publishedAt ?? ''))}</p>
                   <p className="whitespace-pre-line">{videoData.description}</p>
                 </div>
 

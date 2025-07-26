@@ -75,10 +75,11 @@ export default function Header() {
                 >
                   {label}
                   <span
-                    className="absolute bottom-0 h-0.5 w-full origin-left scale-x-0 transform bg-red-500 transition-transform duration-200 ease-out group-hover:scale-x-100"
-                    data-active={
+                    className={`absolute bottom-0 h-0.5 w-full origin-left transform bg-red-500 transition-transform duration-200 ease-out ${
                       pathname === href || pathname.startsWith(`${href}/`)
-                    }
+                        ? 'scale-x-100'
+                        : 'scale-x-0 group-hover:scale-x-100'
+                    }`}
                   />
                 </Link>
               </li>
