@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { inter } from "@/lib/fonts";
 import { ProfileProvider } from "@/lib/profileContext";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased ${inter.variable} font-sans`}
       >
         <ProfileProvider>{children}</ProfileProvider>
+        <Toaster/>
       </body>
     </html>
   );
