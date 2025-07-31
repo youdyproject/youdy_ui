@@ -7,8 +7,8 @@ import Footer from "@/components/layout/Footer";
 import StudyTimeline from "@/components/layout/StudyTimeline";
 import TopButton from "@/components/ui/TopButton";
 import { MoreVertical } from "lucide-react";
+import PlaylistSelectModal from "@/components/playlist/PlaylistSelectModal"; // ✅ 추가
 import authApi from "@/utils/api";
-
 
 interface HistoryVideoItem {
   videoId: string;
@@ -28,17 +28,21 @@ interface HistoryGroup {
 export default function HistoryPage() {
   const [history, setHistory] = useState<HistoryGroup[]>([]);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-  const [page, setPage] = useState(0); 
-  const [hasMore, setHasMore] = useState(true); 
-  const [loading, setLoading] = useState(false); 
-  const observerRef = useRef<HTMLDivElement | null>(null); 
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const observerRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+
+  // 모달 상태
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<HistoryVideoItem | null>(null);
 
   useEffect(() => {
     fetchHistory(page);
   }, [page]);
 
-  // 무한 스크롤
+    //무한 스크롤
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -51,7 +55,6 @@ export default function HistoryPage() {
 
     const current = observerRef.current;
     if (current) observer.observe(current);
-
     return () => {
       if (current) observer.unobserve(current);
     };
@@ -112,7 +115,6 @@ export default function HistoryPage() {
       // 기존 데이터 + 새 데이터 병합
       setHistory((prev) => {
         const mergedMap = new Map<string, HistoryVideoItem[]>();
-
         // 기존 데이터
         prev.forEach((g) => {
           mergedMap.set(g.date, [...(mergedMap.get(g.date) || []), ...g.videos]);
@@ -122,14 +124,12 @@ export default function HistoryPage() {
         groupedArray.forEach((g) => {
           const existing = mergedMap.get(g.date) || [];
           const existingMap = new Map(existing.map((v) => [v.videoId, v]));
-
           g.videos.forEach((v) => {
             const existingItem = existingMap.get(v.videoId);
             if (!existingItem || existingItem.regDt < v.regDt) {
               existingMap.set(v.videoId, v);
             }
           });
-
           mergedMap.set(g.date, Array.from(existingMap.values()));
         });
 
@@ -152,11 +152,12 @@ export default function HistoryPage() {
 
   // 메뉴 핸들러
   const handleAddToPlaylist = (video: HistoryVideoItem) => {
-    console.log("재생목록에 추가:", video.videoId);
+    setSelectedVideo(video);
+    setIsModalOpen(true);
     setActiveMenuId(null);
   };
 
-   // 시청기록 삭제
+  // 시청기록 삭제
   const handleDeleteHistory = async (
     e: React.MouseEvent,
     video: HistoryVideoItem
@@ -291,6 +292,20 @@ export default function HistoryPage() {
           </div>
         </div>
       </main>
+
+      {/* Playlist 모달 */}
+      {isModalOpen && selectedVideo && (
+        <PlaylistSelectModal
+          videoId={selectedVideo.videoId}
+          kind="youtube#video"
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedVideo(null);
+          }}
+          onCreateNew={() => {
+          }}
+        />
+      )}
 
       <TopButton />
       <Footer />
