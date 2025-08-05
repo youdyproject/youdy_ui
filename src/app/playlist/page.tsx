@@ -1,32 +1,74 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StudyTimeline from "@/components/layout/StudyTimeline";
 import TopButton from "@/components/ui/TopButton";
 import { Input } from "@/components/ui/Input";
+import authApi from "@/utils/api";
 
 interface PlaylistItem {
-  playlistId: string;
-  title: string;
-  thumbnailUrl: string;
+  playListSn: number;
+  playListName: string;
+  thumbnailUrl?: string;
   videoCount: number;
 }
 
 export default function Page() {
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // 재생목록 목록 조회
+  const getYoutubeThumbnail = (videoId: string) =>
+    `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+  // 재생목록과 영상 개수 가져오기
+  const fetchPlaylists = async () => {
+    try {
+      const res = await authApi.get("/api/playlist/list");
+      let data: PlaylistItem[] = res.data.data || [];
+
+      const updatedData = await Promise.all(
+        data.map(async (pl) => {
+          try {
+            const videoRes = await authApi.get("/api/playlist/item/list", {
+              params: { playListSn: pl.playListSn },
+            });
+
+            const videos = videoRes.data.data?.contents || [];
+            const total = videoRes.data.data?.totalElements || 0;
+
+            return {
+              ...pl,
+              thumbnailUrl:
+                videos.length > 0 && videos[0].videoId
+                  ? getYoutubeThumbnail(videos[0].videoId)
+                  : undefined,
+              videoCount: total,
+            };
+          } catch {
+            return { ...pl, videoCount: 0 };
+          }
+        })
+      );
+
+      setPlaylist(updatedData);
+    } catch (err) {
+      console.error("재생목록 불러오기 실패", err);
+    }
+  };
+
+  // URL 변경 시마다 목록 갱신
   useEffect(() => {
-    setPlaylist([]);
-  }, []);
+    fetchPlaylists();
+  }, [searchParams]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
-
       <main className="flex flex-col md:flex-row flex-1">
         {/* 왼쪽 영역 */}
         <div className="w-full md:w-[80%] p-4 md:p-6 space-y-6">
@@ -42,25 +84,36 @@ export default function Page() {
             />
           </div>
 
-          {/* 재생목록 카드 or 비어있을 때 메시지 */}
+          {/* 재생목록 카드 */}
           {playlist.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
               {playlist
                 .filter((item) =>
-                  item.title
+                  item.playListName
                     .toLowerCase()
                     .includes(searchKeyword.toLowerCase())
                 )
                 .map((item) => (
                   <div
-                    key={item.playlistId}
-                    className="bg-white border rounded-lg shadow-sm p-3 hover:shadow-md transition cursor-pointer"
+                    key={item.playListSn}
+                    className="bg-white border rounded-lg shadow-sm hover:shadow-md transition"
+                    onClick={() =>
+                      router.push(`/playlist/${item.playListSn}`)
+                    }
                   >
-                    <div className="w-full h-32 bg-gray-200 rounded mb-2" />
-                    <p className="text-sm font-semibold">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      영상 {item.videoCount}개
-                    </p>
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.playListName}
+                      className="w-full h-32 object-cover rounded-t-lg"
+                    />
+                    <div className="p-3">
+                      <p className="text-sm font-semibold">
+                        {item.playListName}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        영상 {item.videoCount}개
+                      </p>
+                    </div>
                   </div>
                 ))}
             </div>
@@ -81,7 +134,6 @@ export default function Page() {
           </div>
         </div>
       </main>
-
       <TopButton />
       <Footer />
     </div>
