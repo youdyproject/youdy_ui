@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import StudyTimeline from "@/components/layout/StudyTimeline";
 import TopButton from "@/components/ui/TopButton";
 import { Input } from "@/components/ui/Input";
+import { MoreVertical } from "lucide-react";
 import authApi from "@/utils/api";
 
 interface PlaylistItem {
@@ -19,17 +20,19 @@ interface PlaylistItem {
 export default function Page() {
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // 유튜브 썸네일 URL 생성
   const getYoutubeThumbnail = (videoId: string) =>
     `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
-  // 재생목록과 영상 개수 가져오기
+  // 재생목록과 영상 개수, 썸네일 가져오기
   const fetchPlaylists = async () => {
     try {
       const res = await authApi.get("/api/playlist/list");
-      let data: PlaylistItem[] = res.data.data || [];
+      const data: PlaylistItem[] = res.data.data || [];
 
       const updatedData = await Promise.all(
         data.map(async (pl) => {
@@ -46,11 +49,15 @@ export default function Page() {
               thumbnailUrl:
                 videos.length > 0 && videos[0].videoId
                   ? getYoutubeThumbnail(videos[0].videoId)
-                  : undefined,
+                  : "/default-thumbnail.png",
               videoCount: total,
             };
           } catch {
-            return { ...pl, videoCount: 0 };
+            return {
+              ...pl,
+              thumbnailUrl: "/default-thumbnail.png",
+              videoCount: 0,
+            };
           }
         })
       );
@@ -60,21 +67,35 @@ export default function Page() {
       console.error("재생목록 불러오기 실패", err);
     }
   };
-
-  // URL 변경 시마다 목록 갱신
+  
+  // 재생목록 내 검색
   useEffect(() => {
     fetchPlaylists();
   }, [searchParams]);
 
+  // 토글 메뉴
+  const toggleMenu = (id: number) => {
+    setActiveMenuId((prev) => (prev === id ? null : id));
+  };
+
+  const handleEdit = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    console.log("재생목록 수정:", id);
+  };
+
+  const handleDelete = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    console.log("재생목록 삭제:", id);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
+
       <main className="flex flex-col md:flex-row flex-1">
-        {/* 왼쪽 영역 */}
         <div className="w-full md:w-[80%] p-4 md:p-6 space-y-6">
           <h1 className="text-xl font-bold">재생목록</h1>
 
-          {/* 검색창 */}
           <div className="max-w-xs">
             <Input
               placeholder="재생목록 내 검색"
@@ -84,7 +105,6 @@ export default function Page() {
             />
           </div>
 
-          {/* 재생목록 카드 */}
           {playlist.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
               {playlist
@@ -96,23 +116,53 @@ export default function Page() {
                 .map((item) => (
                   <div
                     key={item.playListSn}
-                    className="bg-white border rounded-lg shadow-sm hover:shadow-md transition"
-                    onClick={() =>
-                      router.push(`/playlist/${item.playListSn}`)
-                    }
+                    className="bg-white border rounded-lg shadow-sm hover:shadow-md transition cursor-pointer relative"
+                    //onClick={() => router.push(`/playlist/${item.playListSn}`)}
                   >
                     <img
                       src={item.thumbnailUrl}
                       alt={item.playListName}
-                      className="w-full h-32 object-cover rounded-t-lg"
+                      className="w-full h-32 object-cover rounded-t-lg bg-gray-100"
+                      onError={(e) =>
+                        (e.currentTarget.src = "/default-thumbnail.png")
+                      }
                     />
-                    <div className="p-3">
-                      <p className="text-sm font-semibold">
-                        {item.playListName}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        영상 {item.videoCount}개
-                      </p>
+                    <div className="p-3 flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-semibold">
+                          {item.playListName}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          영상 {item.videoCount || 0}개
+                        </p>
+                      </div>
+                      <div className="relative">
+                        <button
+                          className="p-1 hover:bg-gray-100 rounded-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMenu(item.playListSn);
+                          }}
+                        >
+                          <MoreVertical className="w-5 h-5 text-gray-600" />
+                        </button>
+                        {activeMenuId === item.playListSn && (
+                          <div className="absolute right-2 top-10 w-40 rounded-md bg-white shadow-lg border z-50">
+                            <button
+                              onClick={(e) => handleEdit(e, item.playListSn)}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap"
+                            >
+                              재생목록 이름 수정
+                            </button>
+                            <button
+                              onClick={(e) => handleDelete(e, item.playListSn)}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 whitespace-nowrap"
+                            >
+                              재생목록 삭제
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

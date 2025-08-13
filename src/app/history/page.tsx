@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import StudyTimeline from "@/components/layout/StudyTimeline";
 import TopButton from "@/components/ui/TopButton";
 import { MoreVertical } from "lucide-react";
-import PlaylistSelectModal from "@/components/playlist/PlaylistSelectModal"; // ✅ 추가
+import PlaylistSelectModal from "@/components/playlist/PlaylistSelectModal";
 import authApi from "@/utils/api";
 
 interface HistoryVideoItem {
@@ -42,7 +42,7 @@ export default function HistoryPage() {
     fetchHistory(page);
   }, [page]);
 
-    //무한 스크롤
+  //무한 스크롤
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -254,7 +254,7 @@ export default function HistoryPage() {
                       </button>
 
                       {activeMenuId === video.videoId && (
-                        <div className="absolute right-0 mt-2 w-40 rounded-md bg-white shadow-lg border z-50">
+                        <div className="absolute right-0 mt-2 w-40 rounded-md bg-white shadow-md border z-50 overflow-hidden">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -302,8 +302,7 @@ export default function HistoryPage() {
             setIsModalOpen(false);
             setSelectedVideo(null);
           }}
-          onCreateNew={() => {
-          }}
+          onCreateNew={() => {}}
         />
       )}
 
