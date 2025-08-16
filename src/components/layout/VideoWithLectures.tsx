@@ -3,16 +3,8 @@
 import { useEffect, useState } from "react"
 import YouTube, { YouTubeProps } from 'react-youtube';
 import { formatSubscriberCount, formatViewCount, formatRelativeTime } from "@/lib/formatter"
+import { ChevronDown, ChevronUp, SquarePen } from "lucide-react"
 import api from "@/utils/api";
-
-// 강의 아이템 타입 정의
-interface LectureItem {
-  id: number
-  title: string
-  description: string
-  duration: string
-  completed: boolean
-}
 
 // 동영상데이터
 interface VideoData {
@@ -33,6 +25,12 @@ interface ChannelData {
   subscriberCount: number;
 }
 
+// API에서 받는 재생목록 단위
+interface YoudyPlaylist {
+  playListName: string;
+  playListSn: number;
+}
+
 export default function VideoWithLectures() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [videoData, setVideoData] = useState<VideoData>({
@@ -45,53 +43,22 @@ export default function VideoWithLectures() {
     publishedAt: '',
     viewCount: 0,
   });
-  const [playlistData, setPlaylistData] = useState<VideoData>({
-    videoId: '',
-    kind: '',
-    title: '',
-    channelId: '',
-    channelTitle: '',
-    thumbnails: '',
-  });
+  const [playlistData, setPlaylistData] = useState<VideoData[]>([]);
   const [channelData, setChannelData] = useState<ChannelData>({
     thumbnails: '',
     subscriberCount: 0,
-  })
+  });
+  const [youdyPlaylist, setYoudyPlaylist] = useState<YoudyPlaylist[]>([]);
   const [isApiChecked, setIsApiChecked] = useState<boolean>(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
-
-
-  // 강의 데이터
-  const [lectures] = useState<LectureItem[]>([
-    {
-      id: 1,
-      title: "TypeScript # 1",
-      description: "코딩앙마",
-      duration: "05:40",
-      completed: false,
-    },
-    {
-      id: 2,
-      title: "TypeScript # 1",
-      description: "코딩앙마",
-      duration: "05:40",
-      completed: false,
-    },
-    {
-      id: 3,
-      title: "TypeScript # 1",
-      description: "코딩앙마",
-      duration: "05:40",
-      completed: false,
-    },
-    {
-      id: 4,
-      title: "TypeScript # 1",
-      description: "코딩앙마",
-      duration: "05:40",
-      completed: false,
-    },
-  ])
+  const [isPlaylistExpanded, setIsPlaylistExpanded] = useState(true)
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
+  const [autoPlay, setAutoPlay] = useState(true)
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState<string>("");
+  const [tempTitle, setTempTitle] = useState(title);
+  const startEdit = () => { setTempTitle(title); setEditing(true); };
+  const cancelEdit = () => setEditing(false);
 
   /* 유튜브 재생 옵션 */
   const opts: YouTubeProps['opts'] = {
@@ -175,6 +142,21 @@ export default function VideoWithLectures() {
         const resp = await api.get("/api/view/recent/hist");
         const data = resp.data.data;
 
+        // 재생목록 조회
+        const playlistResp = await api.get<{ data: YoudyPlaylist[] }>('/api/playlist/list');
+
+        if (playlistResp) {
+          const playlists: YoudyPlaylist[] = playlistResp.data.data.map((item:any) => ({
+            playListSn: item.playListSn,
+            playListName: item.playListName,
+          }));
+          setYoudyPlaylist(playlists);
+        } else {
+          setTitle("나만의 플레이리스트를 만들어 보세요!"); // default값 세팅
+        }
+
+
+
         // 화면 제어를 위한 api조회 여부 체크
         if (resp.status === 200) {
           setIsApiChecked(true);
@@ -210,14 +192,15 @@ export default function VideoWithLectures() {
           // 재생목록 조회
           if (data.playlistId) {
             const playlistResp = await api.get("/api/youtube/play/list=" + data.playlistId);
-            setPlaylistData({
-              videoId: '',
-              kind: '',
-              title: '',
-              channelId: '',
-              channelTitle: '',
-              thumbnails: '',
-            })
+            const items = playlistResp.data.data.items.map((item: any) => ({
+              videoId: item.id,
+              kind: item.kind,
+              title: item.snippet.title,
+              channelId: item.snippet.channelId,
+              channelTitle: item.snippet.channelTitle,
+              thumbnails: item.snippet.thumbnails.default.url,
+            }));
+            setPlaylistData(items);
           }
 
         }
@@ -231,17 +214,50 @@ export default function VideoWithLectures() {
 
   }, []);
 
+  // playlist값 있는 경우 title 세팅
+  useEffect(() => {
+    if (youdyPlaylist.length > 0) {
+      setTitle(youdyPlaylist[0].playListName);
+    }
+  }, [youdyPlaylist]);
+
+  /* 재생목록 타이틀 저장 or 수정(로직추가필요) */
+  const playlistTitleSave = async () => {
+    const trimTitle = tempTitle.trim(); // 양 옆 공백 제거
+    if (!trimTitle) return; // 공백 저장 시 return
+
+    const result = await api.post("/api/playlist/reg", {
+      playListName: trimTitle
+    });
+
+    setTitle(trimTitle);
+    setEditing(false);
+  };
+
   /* description제어 */
   const toggleDescription = () => {
     setIsDescriptionExpanded(!isDescriptionExpanded)
   }
+
+  const togglePlaylist = () => {
+    setIsPlaylistExpanded(!isPlaylistExpanded)
+  }
+
+  const selectVideo = (index: number) => {
+    setCurrentVideoIndex(index)
+  }
+
+  const toggleAutoPlay = () => {
+    setAutoPlay(!autoPlay)
+  }
+
 
   return (
     <div className="flex flex-col md:flex-row">
       {/* 왼쪽 영상 영역, 시청기록이 있는 경우 화면 재생 */}
       {isApiChecked && videoData.videoId !== "" && (
         <>
-          <div className="w-full md:w-[73%] p-4 flex flex-col">
+          <div className="w-full md:w-[73%] p-2 flex flex-col">
             <div className="relative aspect-video bg-black mb-4 rounded-lg overflow-hidden">
               <YouTube
                 videoId={videoData.videoId}
@@ -291,41 +307,136 @@ export default function VideoWithLectures() {
               </div>
             </div>
           </div>
-          {/* 강의 목록 */}
-          <div className="w-full md:w-[27%] p-4 flex flex-col">
-            {/* TypeScript 강좌 */}
-            <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white p-4 mb-4">
-              <h2 className="text-xl font-bold mb-4">TypeScript 강좌</h2>
 
-              <div className="space-y-3">
-                {lectures.map((lecture) => (
-                  <div
-                    key={lecture.id}
-                    className="bg-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-300 transition-colors"
-                  >
-                    <h3 className="font-medium">{lecture.title}</h3>
-                    <p className="text-sm text-gray-600">{lecture.description}</p>
-                  </div>
-                ))}
-              </div>
+        {/* 강의 목록 */}
+        <div className="w-full md:w-[27%] p-2 flex flex-col">
+        {/* 플레이리스트 헤더 */}
+        {playlistData.length > 0 && (
+        <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white mb-4">
+          <div className="p-4 border-b border-gray-200">
+            {/* 타이틀과 접기 버튼 */}
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-bold">TypeScript 완전정복</h2>
+              <button onClick={togglePlaylist} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                {isPlaylistExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
             </div>
 
-            <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white p-4 mb-4">
-              <h2 className="text-xl font-bold mb-4">TypeScript 강좌</h2>
+            <p className="text-sm text-gray-600 mb-3">코딩앙마 • {playlistData.length}개 동영상</p>
 
-              <div className="space-y-3">
-                {lectures.map((lecture) => (
+            {/* 자동재생 토글 */}
+            {isPlaylistExpanded && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">자동재생</span>
+                <button
+                  onClick={toggleAutoPlay}
+                  className={`relative w-10 h-6 rounded-full transition-colors ${
+                    autoPlay ? "bg-blue-500" : "bg-gray-300"
+                  }`}
+                >
                   <div
-                    key={lecture.id}
-                    className="bg-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-300 transition-colors"
-                  >
-                    <h3 className="font-medium">{lecture.title}</h3>
-                    <p className="text-sm text-gray-600">{lecture.description}</p>
+                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      autoPlay ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 동영상 목록 */}
+          {isPlaylistExpanded && (
+            <div className="max-h-96 overflow-y-auto">
+              {playlistData.map((playlistData, index) => (
+                <div
+                  key={playlistData.videoId}
+                  onClick={() => selectVideo(index)}
+                  className={`flex p-2 cursor-pointer hover:bg-gray-50 transition-colors ${
+                    index === currentVideoIndex ? "bg-blue-50 border-l-4 border-blue-500" : ""
+                  }`}
+                >
+                  {/* 동영상 순서 */}
+                  <div className="flex items-center justify-center w-6 mr-1">
+                    {index === currentVideoIndex && isPlaying ? (
+                      <div className="w-3 h-3 bg-blue-500 rounded-sm animate-pulse" />
+                    ) : (
+                      <span className="text-sm text-gray-500">{index + 1}</span>
+                    )}
                   </div>
-                ))}
+
+                  {/* 썸네일 */}
+                  <div className="relative w-20 h-12 bg-gray-200 rounded mr-3 flex-shrink-0 overflow-hidden">
+                    <img
+                      src={playlistData.thumbnails || "/placeholder.svg"}
+                      alt={playlistData.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* 동영상 시청 기록용 / 현재 미사용 */}
+                    {/* {playlistData.completed && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        </div>
+                      </div>
+                    )} */}
+                  </div>
+
+                  {/* 동영상 정보 */}
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`text-sm font-medium mb-1 truncate ${
+                        index === currentVideoIndex ? "text-blue-600" : "text-gray-900"
+                      }`}
+                      title={playlistData.title}
+                    >
+                      {playlistData.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 truncate">{playlistData.channelTitle}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        )}
+
+        {/* youdy용 playlist*/}
+        <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white mb-4">
+            <div className="p-4 border-b border-gray-200">
+              {/* 타이틀과 접기 버튼 */}
+              <div className="flex items-center justify-between mb-1">
+                {/* ← 왼쪽 묶음 */}
+                <div className="flex items-center">
+                  {!editing ? (
+                    <>
+                      <h2 className="text-lg font-bold">{title}</h2>
+                      <button onClick={startEdit} className="ml-1 p-0 hover:text-blue-600">
+                        <SquarePen size={14} className="align-middle" />
+                      </button>
+                    </>
+                  ) : (
+                    <input
+                      value={tempTitle}
+                      onChange={(e) => setTempTitle(e.target.value)}
+                      onBlur={playlistTitleSave} // 포커스 아웃 시 저장 (원치 않으면 제거)
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") playlistTitleSave();
+                        if (e.key === "Escape") cancelEdit();
+                      }}
+                      className="text-lg font-bold border-b border-gray-300 focus:border-black focus:outline-none bg-transparent"
+                      autoFocus
+                    />
+                  )}
+                </div>
+
+                {/* 오른쪽 토글 버튼은 기존 그대로 */}
+                <button onClick={togglePlaylist} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                  {isPlaylistExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </button>
               </div>
             </div>
           </div>
+        </div>
         </>
       )}
 

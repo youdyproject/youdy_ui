@@ -14,7 +14,7 @@ export default function Page() {
         </div>
 
         {/* 타임라인 */}
-        <div className="w-full md:w-[20%] p-4">
+        <div className="w-full md:w-[20%] p-2">
           <StudyTimeline />
         </div>
       </div>
