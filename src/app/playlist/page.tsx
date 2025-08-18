@@ -1,28 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StudyTimeline from "@/components/layout/StudyTimeline";
 import TopButton from "@/components/ui/TopButton";
 import { Input } from "@/components/ui/Input";
 import { MoreVertical } from "lucide-react";
+import PlaylistEditModal from "@/components/playlist/PlaylistEditModal";
 import authApi from "@/utils/api";
+import { toast } from "sonner";
 
 interface PlaylistItem {
   playListSn: number;
   playListName: string;
   thumbnailUrl?: string;
   videoCount: number;
+  videoId?: string;
 }
 
 export default function Page() {
+  const router = useRouter();
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [editingPlaylist, setEditingPlaylist] = useState<PlaylistItem | null>(null);
 
   // 유튜브 썸네일 URL 생성
   const getYoutubeThumbnail = (videoId: string) =>
@@ -44,12 +47,14 @@ export default function Page() {
             const videos = videoRes.data.data?.contents || [];
             const total = videoRes.data.data?.totalElements || 0;
 
+            const firstVideo = videos[0];
+
             return {
               ...pl,
-              thumbnailUrl:
-                videos.length > 0 && videos[0].videoId
-                  ? getYoutubeThumbnail(videos[0].videoId)
-                  : "/default-thumbnail.png",
+              videoId: firstVideo?.videoId,
+              thumbnailUrl: firstVideo?.videoId
+                ? getYoutubeThumbnail(firstVideo.videoId)
+                : "/default-thumbnail.png",
               videoCount: total,
             };
           } catch {
@@ -67,25 +72,48 @@ export default function Page() {
       console.error("재생목록 불러오기 실패", err);
     }
   };
-  
+
   // 재생목록 내 검색
   useEffect(() => {
     fetchPlaylists();
-  }, [searchParams]);
+  }, []);
 
   // 토글 메뉴
   const toggleMenu = (id: number) => {
     setActiveMenuId((prev) => (prev === id ? null : id));
   };
 
-  const handleEdit = (e: React.MouseEvent, id: number) => {
+  const handleEdit = (e: React.MouseEvent, item: PlaylistItem) => {
     e.stopPropagation();
-    console.log("재생목록 수정:", id);
+    setEditingPlaylist(item);
   };
 
-  const handleDelete = (e: React.MouseEvent, id: number) => {
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
-    console.log("재생목록 삭제:", id);
+    try {
+      await authApi.delete("/api/playlist/del", {
+        params: { playListSn: id },
+      });
+      toast.success("재생목록이 삭제되었습니다.");
+      fetchPlaylists();
+    } catch (err) {
+      console.error("삭제 실패", err);
+      toast.error("재생목록 삭제에 실패했습니다.");
+    }
+  };
+
+  const handleSave = async () => {
+    await fetchPlaylists();
+    setEditingPlaylist(null);
+  };
+
+  const handleClickCard = (item: PlaylistItem) => {
+    if (!item.videoId) {
+      toast.warning("재생 가능한 영상이 없습니다.");
+      return;
+    }
+
+    router.push(`/learning?videoId=${item.videoId}&playlistSn=${item.playListSn}`);
   };
 
   return (
@@ -116,8 +144,8 @@ export default function Page() {
                 .map((item) => (
                   <div
                     key={item.playListSn}
+                    onClick={() => handleClickCard(item)}
                     className="bg-white border rounded-lg shadow-sm hover:shadow-md transition cursor-pointer relative"
-                    //onClick={() => router.push(`/playlist/${item.playListSn}`)}
                   >
                     <img
                       src={item.thumbnailUrl}
@@ -149,14 +177,14 @@ export default function Page() {
                         {activeMenuId === item.playListSn && (
                           <div className="absolute right-2 top-10 w-40 rounded-md bg-white shadow-lg border z-50">
                             <button
-                              onClick={(e) => handleEdit(e, item.playListSn)}
+                              onClick={(e) => handleEdit(e, item)}
                               className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap"
                             >
                               재생목록 이름 수정
                             </button>
                             <button
                               onClick={(e) => handleDelete(e, item.playListSn)}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 whitespace-nowrap"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap"
                             >
                               재생목록 삭제
                             </button>
@@ -184,8 +212,19 @@ export default function Page() {
           </div>
         </div>
       </main>
+
       <TopButton />
       <Footer />
+
+      {/* 모달 */}
+      {editingPlaylist && (
+        <PlaylistEditModal
+          open={true}
+          onClose={() => setEditingPlaylist(null)}
+          onSave={handleSave}
+          playlist={editingPlaylist}
+        />
+      )}
     </div>
   );
 }
