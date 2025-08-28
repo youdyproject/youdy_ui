@@ -11,6 +11,7 @@ import { MoreVertical } from "lucide-react";
 import PlaylistEditModal from "@/components/playlist/PlaylistEditModal";
 import authApi from "@/utils/api";
 import { toast } from "sonner";
+import { fetchPlaylists as fetchPlaylistList, deletePlaylist } from "@/utils/playlistApi";
 
 interface PlaylistItem {
   playListSn: number;
@@ -34,8 +35,7 @@ export default function Page() {
   // 재생목록과 영상 개수, 썸네일 가져오기
   const fetchPlaylists = async () => {
     try {
-      const res = await authApi.get("/api/playlist/list");
-      const data: PlaylistItem[] = res.data.data || [];
+      const data: PlaylistItem[] = await fetchPlaylistList();
 
       const updatedData = await Promise.all(
         data.map(async (pl) => {
@@ -91,9 +91,7 @@ export default function Page() {
   const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
     try {
-      await authApi.delete("/api/playlist/del", {
-        params: { playListSn: id },
-      });
+      await deletePlaylist(id);
       toast.success("재생목록이 삭제되었습니다.");
       fetchPlaylists();
     } catch (err) {
@@ -216,7 +214,7 @@ export default function Page() {
       <TopButton />
       <Footer />
 
-      {/* 모달 */}
+      {/* 이름 수정 모달 */}
       {editingPlaylist && (
         <PlaylistEditModal
           open={true}

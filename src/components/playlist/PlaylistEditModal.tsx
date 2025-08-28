@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
-import authApi from "@/utils/api";
+import { updatePlaylistName } from "@/utils/playlistApi";
 
 interface PlaylistEditModalProps {
   open: boolean;
@@ -23,7 +23,7 @@ export default function PlaylistEditModal({
   playlist,
 }: PlaylistEditModalProps) {
   const [name, setName] = useState(playlist.playListName);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
   // 외부 playlist 값이 바뀔 때마다 name 값 갱신
   useEffect(() => {
@@ -39,12 +39,7 @@ export default function PlaylistEditModal({
 
     try {
       setLoading(true);
-      await authApi.put("/api/playlist/updt/name", null, {
-        params: {
-          playListSn: playlist.playListSn,
-          playListName: name,
-        },
-      });
+      await updatePlaylistName(playlist.playListSn, name);
       toast.success("재생목록 이름이 수정되었습니다.");
       onSave();
       onClose();

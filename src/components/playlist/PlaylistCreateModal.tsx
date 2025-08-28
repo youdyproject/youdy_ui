@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
-import authApi from "@/utils/api";
+import { createPlaylist } from "@/utils/playlistApi";
 
 interface PlaylistCreateModalProps {
   onClose: () => void;
@@ -23,9 +23,7 @@ export default function PlaylistCreateModal({ onClose, onSuccess }: PlaylistCrea
 
     try {
       setLoading(true);
-      await authApi.post("/api/playlist/reg", {
-        playListName: title,
-      });
+      await createPlaylist(title);
       toast.success("새 재생목록이 생성되었습니다.");
       onSuccess();
       onClose();

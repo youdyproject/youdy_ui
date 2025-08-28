@@ -5,6 +5,7 @@ import authApi from "@/utils/api";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import PlaylistCreateModal from "@/components/playlist/PlaylistCreateModal";
+import { fetchPlaylists } from "@/utils/playlistApi";
 
 interface Playlist {
   playListSn: number;
@@ -28,10 +29,10 @@ export default function PlaylistSelectModal({
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // 재생목록 불러오기
-  const fetchPlaylists = async () => {
+  const loadPlaylists = async () => {
     try {
-      const res = await authApi.get("/api/playlist/list");
-      setPlaylists(res.data.data || []);
+      const data = await fetchPlaylists();
+      setPlaylists(data || []);
     } catch (error) {
       console.error("재생목록 불러오기 실패", error);
       toast.error("재생목록 정보를 불러오지 못했습니다.");
@@ -41,7 +42,7 @@ export default function PlaylistSelectModal({
   };
 
   useEffect(() => {
-    fetchPlaylists();
+    loadPlaylists();
   }, []);
 
   // 체크박스 토글 처리
@@ -97,8 +98,7 @@ export default function PlaylistSelectModal({
   // 새 재생목록 생성 후 목록 갱신
   const handleCreateSuccess = async () => {
     try {
-      const res = await authApi.get("/api/playlist/list");
-      const updated = res.data.data || [];
+      const updated = await fetchPlaylists();
       setPlaylists(updated);
 
       const newest = updated[updated.length - 1];
@@ -143,7 +143,7 @@ export default function PlaylistSelectModal({
               ))
             )}
           </div>
-          
+
           <div className="mt-4 space-y-2">
             <button
               onClick={() => setShowCreateModal(true)}
