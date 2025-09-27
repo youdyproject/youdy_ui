@@ -1,6 +1,7 @@
 import axios from "axios";
 import { tokenManager } from "@/lib/tokenManager";
 import { logout } from "@/lib/logout";
+import { validateToken, refreshToken } from "@/lib/api/auth";
 
 /* 토큰 검증용 api */
 export const authApi = axios.create({
@@ -35,6 +36,7 @@ authApi.interceptors.request.use(async (config) => {
       try {
         const newToken = await refreshToken();
         if (newToken) {
+          tokenManager.setToken(newToken);
           token = newToken;
           console.log('토큰이 성공적으로 갱신되었습니다.');
         } else {
@@ -66,6 +68,7 @@ authApi.interceptors.response.use(
       try {
         const newToken = await refreshToken();
         if (newToken) {
+          tokenManager.setToken(newToken);
           console.log('401 에러 후 토큰 갱신 성공. 요청을 재시도합니다.');
           // 새 토큰으로 재시도
           error.config.headers.Authorization = `Bearer ${newToken}`;
@@ -81,43 +84,5 @@ authApi.interceptors.response.use(
   }
 );
 
-/* 토큰 검증 */
-async function validateToken(token: string): Promise<boolean> {
-
-  if (!token) return false;
-
-  try {
-    const response = await api.get('/api/auth/token/validate', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    return response.status === 200;
-  } catch (error) {
-    console.error('토큰 검증 API 호출 오류:', error);
-    return false;
-  }
-}
-
-/* 토큰 갱신 */
-async function refreshToken(): Promise<string | null> {
-  try {
-    console.log('토큰 갱신 요청');
-    const response = await api.get('/api/auth/token/refresh');
-
-    if (response.status === 200) {
-      const data = response.data;
-      tokenManager.setToken(data.accessToken); // 새 토큰 저장
-      console.log('토큰 갱신 성공');
-      return data.accessToken;
-    } else {
-      console.error('토큰 갱신 실패:', response.status, response.statusText);
-    }
-  } catch (error) {
-    console.error('토큰 갱신 요청 중 오류:', error);
-  }
-  return null;
-}
 
 export default authApi;

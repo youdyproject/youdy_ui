@@ -5,6 +5,7 @@ import YouTube, { YouTubeProps } from 'react-youtube';
 import { formatSubscriberCount, formatViewCount, formatRelativeTime } from "@/lib/formatter"
 import { ChevronDown, ChevronUp, SquarePen } from "lucide-react"
 import api from "@/utils/api";
+import { fetchPlaylists, updatePlaylistName } from "@/lib/api";
 
 // 동영상데이터
 interface VideoData {
@@ -55,7 +56,7 @@ export default function VideoWithLectures() {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [autoPlay, setAutoPlay] = useState(true)
   const [editing, setEditing] = useState(false);
-  const [title, setTitle] = useState<string>("");
+  const [title, setTitle] = useState<string>("나만의 플레이리스트를 만들어 보세요!");
   const [tempTitle, setTempTitle] = useState(title);
   const startEdit = () => { setTempTitle(title); setEditing(true); };
   const cancelEdit = () => setEditing(false);
@@ -143,19 +144,11 @@ export default function VideoWithLectures() {
         const data = resp.data.data;
 
         // 재생목록 조회
-        const playlistResp = await api.get<{ data: YoudyPlaylist[] }>('/api/playlist/list');
+        const playlists = await fetchPlaylists();
 
-        if (playlistResp) {
-          const playlists: YoudyPlaylist[] = playlistResp.data.data.map((item:any) => ({
-            playListSn: item.playListSn,
-            playListName: item.playListName,
-          }));
+        if (playlists) {
           setYoudyPlaylist(playlists);
-        } else {
-          setTitle("나만의 플레이리스트를 만들어 보세요!"); // default값 세팅
-        }
-
-
+        } 
 
         // 화면 제어를 위한 api조회 여부 체크
         if (resp.status === 200) {
@@ -226,9 +219,10 @@ export default function VideoWithLectures() {
     const trimTitle = tempTitle.trim(); // 양 옆 공백 제거
     if (!trimTitle) return; // 공백 저장 시 return
 
-    const result = await api.post("/api/playlist/reg", {
-      playListName: trimTitle
-    });
+    // 첫 번째 플레이리스트의 playListSn을 사용 (실제로는 선택된 플레이리스트 사용해야 함)
+    if (youdyPlaylist.length > 0) {
+      await updatePlaylistName(youdyPlaylist[0].playListSn, trimTitle);
+    }
 
     setTitle(trimTitle);
     setEditing(false);
@@ -310,94 +304,94 @@ export default function VideoWithLectures() {
 
         {/* 강의 목록 */}
         <div className="w-full md:w-[27%] p-2 flex flex-col">
-        {/* 플레이리스트 헤더 */}
-        {playlistData.length > 0 && (
-        <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white mb-4">
-          <div className="p-4 border-b border-gray-200">
-            {/* 타이틀과 접기 버튼 */}
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-bold">TypeScript 완전정복</h2>
-              <button onClick={togglePlaylist} className="p-1 hover:bg-gray-100 rounded transition-colors">
-                {isPlaylistExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </button>
+          {/* 플레이리스트 헤더 */}
+          {playlistData.length > 0 && (
+          <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white mb-4">
+            <div className="p-4 border-b border-gray-200">
+              {/* 타이틀과 접기 버튼 */}
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-lg font-bold">TypeScript 완전정복</h2>
+                <button onClick={togglePlaylist} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                  {isPlaylistExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-600 mb-3">코딩앙마 • {playlistData.length}개 동영상</p>
+
+              {/* 자동재생 토글 */}
+              {isPlaylistExpanded && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700">자동재생</span>
+                  <button
+                    onClick={toggleAutoPlay}
+                    className={`relative w-10 h-6 rounded-full transition-colors ${
+                      autoPlay ? "bg-blue-500" : "bg-gray-300"
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        autoPlay ? "translate-x-5" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
             </div>
 
-            <p className="text-sm text-gray-600 mb-3">코딩앙마 • {playlistData.length}개 동영상</p>
-
-            {/* 자동재생 토글 */}
+            {/* 동영상 목록 */}
             {isPlaylistExpanded && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">자동재생</span>
-                <button
-                  onClick={toggleAutoPlay}
-                  className={`relative w-10 h-6 rounded-full transition-colors ${
-                    autoPlay ? "bg-blue-500" : "bg-gray-300"
-                  }`}
-                >
+              <div className="max-h-96 overflow-y-auto">
+                {playlistData.map((playlistData, index) => (
                   <div
-                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      autoPlay ? "translate-x-5" : "translate-x-1"
+                    key={playlistData.videoId}
+                    onClick={() => selectVideo(index)}
+                    className={`flex p-2 cursor-pointer hover:bg-gray-50 transition-colors ${
+                      index === currentVideoIndex ? "bg-blue-50 border-l-4 border-blue-500" : ""
                     }`}
-                  />
-                </button>
+                  >
+                    {/* 동영상 순서 */}
+                    <div className="flex items-center justify-center w-6 mr-1">
+                      {index === currentVideoIndex && isPlaying ? (
+                        <div className="w-3 h-3 bg-blue-500 rounded-sm animate-pulse" />
+                      ) : (
+                        <span className="text-sm text-gray-500">{index + 1}</span>
+                      )}
+                    </div>
+
+                    {/* 썸네일 */}
+                    <div className="relative w-20 h-12 bg-gray-200 rounded mr-3 flex-shrink-0 overflow-hidden">
+                      <img
+                        src={playlistData.thumbnails || "/placeholder.svg"}
+                        alt={playlistData.title}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* 동영상 시청 기록용 / 현재 미사용 */}
+                      {/* {playlistData.completed && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                          <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                          </div>
+                        </div>
+                      )} */}
+                    </div>
+
+                    {/* 동영상 정보 */}
+                    <div className="flex-1 min-w-0">
+                      <h3
+                        className={`text-sm font-medium mb-1 truncate ${
+                          index === currentVideoIndex ? "text-blue-600" : "text-gray-900"
+                        }`}
+                        title={playlistData.title}
+                      >
+                        {playlistData.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 truncate">{playlistData.channelTitle}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-
-          {/* 동영상 목록 */}
-          {isPlaylistExpanded && (
-            <div className="max-h-96 overflow-y-auto">
-              {playlistData.map((playlistData, index) => (
-                <div
-                  key={playlistData.videoId}
-                  onClick={() => selectVideo(index)}
-                  className={`flex p-2 cursor-pointer hover:bg-gray-50 transition-colors ${
-                    index === currentVideoIndex ? "bg-blue-50 border-l-4 border-blue-500" : ""
-                  }`}
-                >
-                  {/* 동영상 순서 */}
-                  <div className="flex items-center justify-center w-6 mr-1">
-                    {index === currentVideoIndex && isPlaying ? (
-                      <div className="w-3 h-3 bg-blue-500 rounded-sm animate-pulse" />
-                    ) : (
-                      <span className="text-sm text-gray-500">{index + 1}</span>
-                    )}
-                  </div>
-
-                  {/* 썸네일 */}
-                  <div className="relative w-20 h-12 bg-gray-200 rounded mr-3 flex-shrink-0 overflow-hidden">
-                    <img
-                      src={playlistData.thumbnails || "/placeholder.svg"}
-                      alt={playlistData.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {/* 동영상 시청 기록용 / 현재 미사용 */}
-                    {/* {playlistData.completed && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
-                          <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        </div>
-                      </div>
-                    )} */}
-                  </div>
-
-                  {/* 동영상 정보 */}
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className={`text-sm font-medium mb-1 truncate ${
-                        index === currentVideoIndex ? "text-blue-600" : "text-gray-900"
-                      }`}
-                      title={playlistData.title}
-                    >
-                      {playlistData.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 truncate">{playlistData.channelTitle}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
         )}
 
         {/* youdy용 playlist*/}
